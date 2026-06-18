@@ -1,0 +1,20 @@
+{
+  "name": "Wing-O",
+  "short_name": "Wing-O",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#d84315",
+  "icons": [
+    {
+      "src": "wingo-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "wingo-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="theme-color" content="#d84315">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wing-O">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="wingo-icon-192.png">
+
+<title>Wing-O 🍗</title>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+text-align:center;
+background:linear-gradient(180deg,#111111,#2c2c2c);
+padding:15px;
+margin:0;
+color:white;
+}
+
+h1{
+font-size:30px;
+color:#ff7043;
+}
+
+.sub{
+color:#cccccc;
+margin-bottom:15px;
+}
+
+#board{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:6px;
+max-width:95vw;
+margin:20px auto;
+}
+
+.square{
+background:#2a2a2a;
+border-radius:12px;
+padding:8px;
+font-size:12px;
+line-height:1.2;
+min-height:75px;
+display:flex;
+align-items:center;
+justify-content:center;
+border:2px solid #555;
+cursor:pointer;
+user-select:none;
+transition:0.2s;
+}
+
+.marked{
+background:#d84315;
+color:white;
+font-weight:bold;
+}
+
+button{
+background:#ff7043;
+color:white;
+border:none;
+padding:12px 18px;
+font-size:16px;
+border-radius:10px;
+margin:5px;
+cursor:pointer;
+}
+
+.stats{
+margin-top:10px;
+font-weight:bold;
+}
+
+#loader{
+position:fixed;
+inset:0;
+background:linear-gradient(180deg,#ff7043,#d84315);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+color:white;
+}
+
+.loader-content{
+text-align:center;
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1);}
+50%{transform:scale(1.05);}
+100%{transform:scale(1);}
+}
+
+#toast{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+background:black;
+color:white;
+padding:10px 15px;
+border-radius:20px;
+display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loader">
+<div class="loader-content">
+🍗
+<h2>Wing-O</h2>
+<p>Loading questionable decisions...</p>
+</div>
+</div>
+
+<h1>🍗 Wing-O ATL 🔥</h1>
+<div class="sub">Tap squares as game day unfolds 🍺</div>
+
+<button onclick="generateBoard()">🎲 New Board</button>
+<button onclick="resetBoard()">↺ Reset</button>
+<button onclick="shareBoard()">📤 Share</button>
+
+<div class="stats">
+Marked: <span id="markedCount">1</span> |
+Bingos: <span id="bingoCount">0</span>
+</div>
+
+<div id="board"></div>
+
+<div id="toast"></div>
+
+<script>
+
+/* REPLACE WITH YOUR BAR’S WORD BANK */
+const words = [
+"Someone orders Zamunda Fire",
+"USA WIN",
+"Someone wins Shaker",
+"Whole Bar Shot",
+"Bartender drunker than you",
+"FUCKIN JENGA",
+"Former Employee Visit",
+"Reid Yells at You",
+"Former Employee walks in",
+"Someone yells at TV",
+"Jukebox Wars",
+"Hootin and Hollerin",
+"Weird Bathroom Encounter",
+"Server Vaping",
+"Birthday shot",
+"Server disappears",
+"Treats",
+"Ring Toss Win",
+"Ding Dong Win",
+"Last call linger-er",
+"Steel Drum",
+"Package",
+"One more",
+"Someone loses phone",
+"Wing Festival Visit",
+"Bar-sing-along",
+"PDA",
+"Waffle House after this"
+];
+
+let bingoCount = 0;
+
+function shuffle(array){
+for(let i=array.length-1;i>0;i--){
+const j=Math.floor(Math.random()*(i+1));
+[array[i],array[j]]=[array[j],array[i]];
+}
+return array;
+}
+
+function generateBoard(){
+const board=document.getElementById("board");
+board.innerHTML="";
+bingoCount=0;
+
+let shuffled=shuffle([...words]).slice(0,24);
+
+for(let i=0;i<25;i++){
+
+let square=document.createElement("div");
+square.classList.add("square");
+
+if(i===12){
+square.innerText="FREE 🍗";
+square.classList.add("marked");
+}else{
+square.innerText=shuffled.shift();
+
+square.onclick=()=>{
+square.classList.toggle("marked");
+updateStats();
+checkBingo();
+};
+}
+
+board.appendChild(square);
+}
+
+updateStats();
+}
+
+function resetBoard(){
+generateBoard();
+showToast("Board reset 🔥");
+}
+
+function updateStats(){
+let marked=document.querySelectorAll(".marked").length;
+document.getElementById("markedCount").innerText=marked;
+
+if(marked===25){
+showToast("🏆 FULL BOARD WINNER 🏆");
+}
+}
+
+function checkBingo(){
+
+const squares=document.querySelectorAll(".square");
+let marked=[...squares].map(s=>s.classList.contains("marked"));
+
+const wins=[
+[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
+[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
+[0,6,12,18,24],[4,8,12,16,20]
+];
+
+for(let combo of wins){
+if(combo.every(i=>marked[i])){
+showToast("WING-O! 🍗🔥");
+bingoCount=1;
+document.getElementById("bingoCount").innerText=bingoCount;
+return;
+}
+}
+}
+
+function showToast(message){
+const toast=document.getElementById("toast");
+toast.innerText=message;
+toast.style.display="block";
+
+setTimeout(()=>{
+toast.style.display="none";
+},2000);
+}
+
+function shareBoard(){
+
+if(navigator.share){
+navigator.share({
+title:"Wing-O",
+text:"I'm playing Wing-O 🍗🔥",
+url:window.location.href
+});
+}
+else{
+showToast("Sharing not supported");
+}
+}
+
+window.addEventListener("load",()=>{
+
+setTimeout(()=>{
+document.getElementById("loader").style.display="none";
+},1200);
+
+});
+
+generateBoard();
+
+</script>
+
+</body>
+</html>

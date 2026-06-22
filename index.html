@@ -3,290 +3,378 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <meta name="theme-color" content="#d84315">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Wing-O">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="wingo-icon-192.png">
-
 <title>Wing-O 🍗</title>
 
 <style>
-
 body{
-font-family:Arial,sans-serif;
-text-align:center;
-background:linear-gradient(180deg,#111111,#2c2c2c);
-padding:15px;
-margin:0;
-color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;
+  background:linear-gradient(180deg,#111,#2b2b2b);
+  color:white;
+  padding:15px;
+  margin:0;
 }
-
-h1{
-font-size:30px;
-color:#ff7043;
-}
-
-.sub{
-color:#cccccc;
-margin-bottom:15px;
-}
-
-#board{
-display:grid;
-grid-template-columns:repeat(5,1fr);
-gap:6px;
-max-width:95vw;
-margin:20px auto;
-}
-
-.square{
-background:#2a2a2a;
-border-radius:12px;
-padding:8px;
-font-size:12px;
-line-height:1.2;
-min-height:75px;
-display:flex;
-align-items:center;
-justify-content:center;
-border:2px solid #555;
-cursor:pointer;
-user-select:none;
-transition:0.2s;
-}
-
-.marked{
-background:#d84315;
-color:white;
-font-weight:bold;
-}
-
+h1{color:#ff7043;font-size:32px;}
+.sub{color:#ccc;}
 button{
-background:#ff7043;
-color:white;
-border:none;
-padding:12px 18px;
-font-size:16px;
-border-radius:10px;
-margin:5px;
-cursor:pointer;
+  background:#ff7043;
+  color:white;
+  border:none;
+  padding:12px 16px;
+  border-radius:10px;
+  font-weight:bold;
+  margin:5px;
 }
-
-.stats{
-margin-top:10px;
-font-weight:bold;
+#board{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  max-width:95vw;
+  margin:20px auto;
 }
-
-#loader{
-position:fixed;
-inset:0;
-background:linear-gradient(180deg,#ff7043,#d84315);
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:9999;
-color:white;
+.square{
+  background:#2a2a2a;
+  border:2px solid #555;
+  border-radius:12px;
+  min-height:75px;
+  padding:8px;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  user-select:none;
 }
-
-.loader-content{
-text-align:center;
-animation:pulse 1.5s infinite;
+.marked{
+  background:#d84315;
+  font-weight:bold;
 }
-
-@keyframes pulse{
-0%{transform:scale(1);}
-50%{transform:scale(1.05);}
-100%{transform:scale(1);}
-}
-
 #toast{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-background:black;
-color:white;
-padding:10px 15px;
-border-radius:20px;
-display:none;
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:black;
+  padding:12px 18px;
+  border-radius:20px;
+  display:none;
 }
-
+.leaderboard{
+  background:#1c1c1c;
+  border:2px solid #444;
+  border-radius:14px;
+  padding:15px;
+  margin-top:20px;
+}
+.leaderboard h2{color:#ff7043;}
+.leaderboard-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+  border-bottom:1px solid #333;
+}
 </style>
 </head>
 
 <body>
 
-<div id="loader">
-<div class="loader-content">
-🍗
-<h2>Wing-O</h2>
-<p>Loading questionable decisions...</p>
-</div>
-</div>
-
 <h1>🍗 Wing-O ATL 🔥</h1>
 <div class="sub">Tap squares as game day unfolds 🍺</div>
 
-<button onclick="generateBoard()">🎲 New Board</button>
-<button onclick="resetBoard()">↺ Reset</button>
-<button onclick="shareBoard()">📤 Share</button>
+<button onclick="newBoard()">🎲 New Board</button>
+<button onclick="resetMyBoard()">↺ Reset My Board</button>
+<button onclick="adminReset()">🧹 Admin Reset</button>
 
-<div class="stats">
-Marked: <span id="markedCount">1</span> |
-Bingos: <span id="bingoCount">0</span>
+<div>
+Player: <strong id="playerNameDisplay"></strong><br>
+Score: <strong id="scoreDisplay">0</strong>
 </div>
 
 <div id="board"></div>
 
+<div class="leaderboard">
+  <h2>🏆 Live Leaderboard</h2>
+  <div id="leaderboardList">Loading...</div>
+</div>
+
 <div id="toast"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  deleteDoc,
+  onSnapshot,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-/* REPLACE WITH YOUR BAR’S WORD BANK */
+const firebaseConfig = {
+  apiKey: "AIzaSyDn51OcgXj-e611KeLvC__Mx9OAhCX-zxE",
+  authDomain: "wing-o-26198.firebaseapp.com",
+  projectId: "wing-o-26198",
+  storageBucket: "wing-o-26198.firebasestorage.app",
+  messagingSenderId: "308387774006",
+  appId: "1:308387774006:web:eac5aa77978fb48a286297",
+  measurementId: "G-V44WDV57WD"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 const words = [
-"Someone orders Zamunda Fire",
-"USA WIN",
-"Someone wins Shaker",
-"Whole Bar Shot",
-"Bartender drunker than you",
-"FUCKIN JENGA",
-"Former Employee Visit",
-"Reid Yells at You",
-"Former Employee walks in",
+"Someone orders 20 wings",
+"Falcons mentioned",
+"Someone asks for ranch",
+"Shots ordered",
+"Bartender knows your name",
+"Game goes into overtime",
+"Someone spills a beer",
+"Kitchen gets slammed",
+"Regular walks in",
 "Someone yells at TV",
-"Jukebox Wars",
-"Hootin and Hollerin",
-"Weird Bathroom Encounter",
-"Server Vaping",
+"Hot wing challenge",
+"Someone orders extra fries",
+"Beer tower arrives",
+"Fantasy football talk",
 "Birthday shot",
-"Bartender MIA",
-"Treats",
-"Ring Toss Win",
-"Ding Dong Win",
-"Last call linger-er",
-"Steel Drum",
-"Package",
-"One more",
+"Server disappears",
+"Someone orders lemon pepper",
+"Atlanta traffic complaint",
+"Uber gets called",
+"Last call panic",
+"Group selfie",
+"Someone double fists drinks",
+"One more round",
 "Someone loses phone",
-"Wing Festival Visit",
-"Bar-sing-along",
-"PDA",
+"Debate over best wings",
+"Someone starts karaoke",
+"Too much hot sauce",
 "Waffle House after this"
 ];
 
-let bingoCount = 0;
+const STORAGE_BOARD = "wingo_board";
+const STORAGE_MARKED = "wingo_marked";
+const STORAGE_LINES = "wingo_lines";
+const STORAGE_PLAYER = "wingo_player";
+const STORAGE_ID = "wingo_player_id";
+const STORAGE_BLACKOUT = "wingo_blackout";
 
-function shuffle(array){
-for(let i=array.length-1;i>0;i--){
-const j=Math.floor(Math.random()*(i+1));
-[array[i],array[j]]=[array[j],array[i]];
-}
-return array;
-}
+let score = 0;
 
-function generateBoard(){
-const board=document.getElementById("board");
-board.innerHTML="";
-bingoCount=0;
-
-let shuffled=shuffle([...words]).slice(0,24);
-
-for(let i=0;i<25;i++){
-
-let square=document.createElement("div");
-square.classList.add("square");
-
-if(i===12){
-square.innerText="FREE 🍗";
-square.classList.add("marked");
-}else{
-square.innerText=shuffled.shift();
-
-square.onclick=()=>{
-square.classList.toggle("marked");
-updateStats();
-checkBingo();
-};
-}
-
-board.appendChild(square);
-}
-
-updateStats();
-}
-
-function resetBoard(){
-generateBoard();
-showToast("Board reset 🔥");
-}
-
-function updateStats(){
-let marked=document.querySelectorAll(".marked").length;
-document.getElementById("markedCount").innerText=marked;
-
-if(marked===25){
-showToast("🏆 FULL BOARD WINNER 🏆");
-}
-}
-
-function checkBingo(){
-
-const squares=document.querySelectorAll(".square");
-let marked=[...squares].map(s=>s.classList.contains("marked"));
-
-const wins=[
+const wins = [
 [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
 [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
 [0,6,12,18,24],[4,8,12,16,20]
 ];
 
-for(let combo of wins){
-if(combo.every(i=>marked[i])){
-showToast("WING-O! 🍗🔥");
-bingoCount=1;
-document.getElementById("bingoCount").innerText=bingoCount;
-return;
+function getPlayerId(){
+  let id = localStorage.getItem(STORAGE_ID);
+  if(!id){
+    id = crypto.randomUUID();
+    localStorage.setItem(STORAGE_ID,id);
+  }
+  return id;
 }
+
+function getPlayerName(){
+  let name = localStorage.getItem(STORAGE_PLAYER);
+  if(!name){
+    name = prompt("Enter your Wing-O player name:");
+    if(!name) name = "Anonymous Wing Fan";
+    localStorage.setItem(STORAGE_PLAYER,name);
+  }
+  document.getElementById("playerNameDisplay").innerText = name;
+  return name;
 }
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+  return array;
 }
+
+function getBoard(){
+  let saved = localStorage.getItem(STORAGE_BOARD);
+  if(saved) return JSON.parse(saved);
+
+  let board = shuffle([...words]).slice(0,24);
+  localStorage.setItem(STORAGE_BOARD,JSON.stringify(board));
+  return board;
+}
+
+function buildBoard(){
+  const boardDiv = document.getElementById("board");
+  boardDiv.innerHTML = "";
+
+  let boardWords = [...getBoard()];
+  let savedMarked = JSON.parse(localStorage.getItem(STORAGE_MARKED) || "[12]");
+
+  for(let i=0;i<25;i++){
+    const square = document.createElement("div");
+    square.classList.add("square");
+
+    if(i===12){
+      square.innerText = "FREE 🍗";
+      square.classList.add("marked");
+    } else {
+      square.innerText = boardWords.shift();
+    }
+
+    if(savedMarked.includes(i)){
+      square.classList.add("marked");
+    }
+
+    square.onclick = () => {
+      square.classList.toggle("marked");
+      saveMarked();
+      checkBingo();
+    };
+
+    boardDiv.appendChild(square);
+  }
+}
+
+function saveMarked(){
+  const squares = document.querySelectorAll(".square");
+  const marked = [];
+
+  squares.forEach((sq,index)=>{
+    if(sq.classList.contains("marked")){
+      marked.push(index);
+    }
+  });
+
+  localStorage.setItem(STORAGE_MARKED,JSON.stringify(marked));
+}
+
+async function updateFirebaseScore(points){
+  const playerId = getPlayerId();
+  const playerName = getPlayerName();
+  const playerRef = doc(db,"leaderboard",playerId);
+  const snap = await getDoc(playerRef);
+
+  let currentScore = 0;
+  if(snap.exists()){
+    currentScore = snap.data().score || 0;
+  }
+
+  score = currentScore + points;
+
+  await setDoc(playerRef,{
+    name: playerName,
+    score: score,
+    updatedAt: serverTimestamp()
+  });
+
+  document.getElementById("scoreDisplay").innerText = score;
+}
+
+function checkBingo(){
+  const squares = document.querySelectorAll(".square");
+  const marked = [...squares].map(s=>s.classList.contains("marked"));
+  let claimedLines = JSON.parse(localStorage.getItem(STORAGE_LINES) || "[]");
+
+  wins.forEach((combo,index)=>{
+    if(combo.every(i=>marked[i]) && !claimedLines.includes(index)){
+      claimedLines.push(index);
+      localStorage.setItem(STORAGE_LINES,JSON.stringify(claimedLines));
+      showToast("WING-O! +1 🍗🔥");
+      updateFirebaseScore(1);
+    }
+  });
+
+  if(marked.every(Boolean) && !localStorage.getItem(STORAGE_BLACKOUT)){
+    localStorage.setItem(STORAGE_BLACKOUT,"true");
+    showToast("BLACKOUT BONUS! +5 🏆");
+    updateFirebaseScore(5);
+  }
+}
+
+function listenLeaderboard(){
+  const leaderboardRef = collection(db,"leaderboard");
+
+  onSnapshot(leaderboardRef,(snapshot)=>{
+    let players = [];
+
+    snapshot.forEach(doc=>{
+      players.push(doc.data());
+    });
+
+    players.sort((a,b)=>(b.score || 0)-(a.score || 0));
+
+    const list = document.getElementById("leaderboardList");
+    list.innerHTML = "";
+
+    if(players.length===0){
+      list.innerHTML = "No scores yet.";
+      return;
+    }
+
+    players.forEach((player,index)=>{
+      const row = document.createElement("div");
+      row.classList.add("leaderboard-row");
+      row.innerHTML = `
+        <span>${index+1}. ${player.name}</span>
+        <strong>${player.score}</strong>
+      `;
+      list.appendChild(row);
+    });
+  });
+}
+
+window.newBoard = function(){
+  localStorage.removeItem(STORAGE_BOARD);
+  localStorage.removeItem(STORAGE_MARKED);
+  localStorage.removeItem(STORAGE_LINES);
+  localStorage.removeItem(STORAGE_BLACKOUT);
+  buildBoard();
+  showToast("New board generated 🔥");
+};
+
+window.resetMyBoard = function(){
+  localStorage.removeItem(STORAGE_MARKED);
+  localStorage.removeItem(STORAGE_LINES);
+  localStorage.removeItem(STORAGE_BLACKOUT);
+  buildBoard();
+  showToast("Your board was reset");
+};
+
+window.adminReset = async function(){
+  const confirmReset = confirm("This clears the live leaderboard for everyone. Continue?");
+  if(!confirmReset) return;
+
+  const snapshot = await getDocs(collection(db,"leaderboard"));
+  snapshot.forEach(async (playerDoc)=>{
+    await deleteDoc(doc(db,"leaderboard",playerDoc.id));
+  });
+
+  showToast("Leaderboard cleared");
+};
 
 function showToast(message){
-const toast=document.getElementById("toast");
-toast.innerText=message;
-toast.style.display="block";
+  const toast = document.getElementById("toast");
+  toast.innerText = message;
+  toast.style.display = "block";
 
-setTimeout(()=>{
-toast.style.display="none";
-},2000);
+  setTimeout(()=>{
+    toast.style.display = "none";
+  },2200);
 }
 
-function shareBoard(){
-
-if(navigator.share){
-navigator.share({
-title:"Wing-O",
-text:"I'm playing Wing-O 🍗🔥",
-url:window.location.href
-});
-}
-else{
-showToast("Sharing not supported");
-}
-}
-
-window.addEventListener("load",()=>{
-
-setTimeout(()=>{
-document.getElementById("loader").style.display="none";
-},1200);
-
-});
-
-generateBoard();
-
+getPlayerName();
+buildBoard();
+listenLeaderboard();
 </script>
 
 </body>

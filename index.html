@@ -63,6 +63,12 @@ button{
   border-radius:20px;
   display:none;
 }
+.version{
+  margin-top:25px;
+  color:#888;
+  font-size:12px;
+  text-align:center;
+}
 .leaderboard{
   background:#1c1c1c;
   border:2px solid #444;
@@ -87,8 +93,6 @@ button{
 
 <button onclick="newBoard()">🎲 New Board</button>
 <button onclick="resetMyBoard()">↺ Reset My Board</button>
-<button onclick="adminReset()">🧹 Admin Reset</button>
-
 <div>
 Player: <strong id="playerNameDisplay"></strong><br>
 Score: <strong id="scoreDisplay">0</strong>
@@ -102,6 +106,9 @@ Score: <strong id="scoreDisplay">0</strong>
 </div>
 
 <div id="toast"></div>
+<div class="version">
+Wing-O v1.0.0 • June 2026
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
@@ -131,33 +138,33 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const words = [
-"Someone orders 20 wings",
-"Falcons mentioned",
-"Someone asks for ranch",
-"Shots ordered",
-"Bartender knows your name",
-"Game goes into overtime",
-"Someone spills a beer",
-"Kitchen gets slammed",
-"Regular walks in",
+"Someone orders Zamunda Fire",
+"USA WIN",
+"Someone wins Shaker",
+"Whole Bar Shot",
+"Bartender drunker than you",
+"FUCKIN JENGA",
+"Former Employee Visit",
+"Reid Yells at You",
+"Former Employee walks in",
 "Someone yells at TV",
-"Hot wing challenge",
-"Someone orders extra fries",
-"Beer tower arrives",
-"Fantasy football talk",
+"Jukebox Wars",
+"Hootin and Hollerin",
+"Weird Bathroom Encounter",
+"Server Vaping",
 "Birthday shot",
-"Server disappears",
-"Someone orders lemon pepper",
-"Atlanta traffic complaint",
-"Uber gets called",
-"Last call panic",
-"Group selfie",
-"Someone double fists drinks",
-"One more round",
+"Bartender MIA",
+"Treats",
+"Ring Toss Win",
+"Ding Dong Win",
+"Last call linger-er",
+"Steel Drum",
+"Package",
+"One more",
 "Someone loses phone",
-"Debate over best wings",
-"Someone starts karaoke",
-"Too much hot sauce",
+"Wing Festival Visit",
+"Bar-sing-along",
+"PDA",
 "Waffle House after this"
 ];
 

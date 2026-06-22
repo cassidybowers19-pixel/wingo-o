@@ -93,6 +93,7 @@ button{
 
 <button onclick="newBoard()">🎲 New Board</button>
 <button onclick="resetMyBoard()">↺ Reset My Board</button>
+<button onclick="shareBoard()">📤 Share</button>
 <div>
 Player: <strong id="playerNameDisplay"></strong><br>
 Score: <strong id="scoreDisplay">0</strong>
@@ -191,7 +192,24 @@ function getPlayerId(){
   }
   return id;
 }
+window.shareBoard = function(){
 
+  if(navigator.share){
+
+    navigator.share({
+      title:"Wing-O",
+      text:"Join me for Wing-O 🍗🔥",
+      url:window.location.href
+    });
+
+  } else {
+
+    navigator.clipboard.writeText(window.location.href);
+    showToast("Link copied 📋");
+
+  }
+
+};
 function getPlayerName(){
   let name = localStorage.getItem(STORAGE_PLAYER);
   if(!name){

@@ -83,11 +83,112 @@ button{
   padding:8px;
   border-bottom:1px solid #333;
 }
+#loadingScreen{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(180deg,#111,#2b2b2b);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+  transition:opacity .6s ease;
+  overflow:hidden;
+  color:white;
+}
+
+.loadingLogo{
+  width:180px;
+  max-width:45vw;
+  z-index:5;
+  animation:logoPop 1.5s ease-in-out infinite;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.5));
+}
+
+#loadingScreen h1{
+  color:#ff7043;
+  font-size:42px;
+  margin:18px 0 6px;
+  z-index:5;
+}
+
+#loadingScreen p{
+  color:#ddd;
+  font-size:18px;
+  z-index:5;
+}
+
+.loadingBar{
+  width:240px;
+  height:18px;
+  background:#444;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:14px;
+  z-index:5;
+}
+
+.loadingFill{
+  height:100%;
+  width:0%;
+  background:#ff7043;
+  border-radius:20px;
+  animation:loadFill 2s ease-out forwards;
+}
+
+.fallingWing{
+  position:absolute;
+  top:-60px;
+  font-size:34px;
+  animation:fallWings 3s linear infinite;
+  opacity:.9;
+}
+
+.wing1{left:10%;animation-delay:0s;}
+.wing2{left:30%;animation-delay:.6s;}
+.wing3{left:50%;animation-delay:1.2s;}
+.wing4{left:70%;animation-delay:.3s;}
+.wing5{left:88%;animation-delay:1.5s;}
+
+@keyframes logoPop{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.05);}
+}
+
+@keyframes loadFill{
+  from{width:0%;}
+  to{width:100%;}
+}
+
+@keyframes fallWings{
+  0%{
+    transform:translateY(-80px) rotate(0deg);
+  }
+  100%{
+    transform:translateY(110vh) rotate(360deg);
+  }
+}  
 </style>
 </head>
 
 <body>
+<div id="loadingScreen">
+  <div class="fallingWing wing1">🍗</div>
+  <div class="fallingWing wing2">🍗</div>
+  <div class="fallingWing wing3">🍗</div>
+  <div class="fallingWing wing4">🍗</div>
+  <div class="fallingWing wing5">🍗</div>
 
+  <img src="wingo-icon-192.png" alt="Wing-O Logo" class="loadingLogo">
+
+  <h1>Wing-O</h1>
+  <p>Loading your board...</p>
+
+  <div class="loadingBar">
+    <div class="loadingFill"></div>
+  </div>
+</div>
+  
 <h1>🍗 Wing-O ATL 🔥</h1>
 <div class="sub">Tap squares as game day unfolds 🍺</div>
 
@@ -400,6 +501,19 @@ function showToast(message){
 getPlayerName();
 buildBoard();
 listenLeaderboard();
+window.addEventListener("load", () => {
+  const loading = document.getElementById("loadingScreen");
+
+  setTimeout(() => {
+    if (loading) {
+      loading.style.opacity = "0";
+
+      setTimeout(() => {
+        loading.remove();
+      }, 600);
+    }
+  }, 2200);
+});
 </script>
 
 </body>

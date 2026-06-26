@@ -149,7 +149,10 @@ button{
 .wing3{left:50%;animation-delay:1.2s;}
 .wing4{left:70%;animation-delay:.3s;}
 .wing5{left:88%;animation-delay:1.5s;}
-
+.wing6{left:20%;animation-delay:1.9s;}
+.wing7{left:60%;animation-delay:.9s;}
+.wing8{left:78%;animation-delay:2.2s;}
+  
 @keyframes logoPop{
   0%,100%{transform:scale(1);}
   50%{transform:scale(1.05);}
@@ -167,7 +170,21 @@ button{
   100%{
     transform:translateY(110vh) rotate(360deg);
   }
-}  
+} 
+.app-logo-header{
+  text-align:center;
+  margin:5px auto 12px;
+}
+
+.board-logo{
+  width:190px;
+  max-width:70vw;
+  height:auto;
+  border-radius:24px;
+  display:block;
+  margin:0 auto;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,.35));
+}
 </style>
 </head>
 
@@ -190,6 +207,10 @@ button{
   <div class="loadingBar">
     <div class="loadingFill"></div>
   </div>
+</div>
+
+  <div class="app-logo-header">
+  <img src="wingo-icon-192.png" alt="Wing-O Logo" class="board-logo">
 </div>
   
 <h1>🍗 Wing-O ATL 🔥</h1>

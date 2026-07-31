@@ -495,6 +495,7 @@ button{
 <button onclick="shareBoard()">📤 Share</button>
 <button onclick="openMemories()">📸 Memories</button>
 <button onclick="openProfile()">🎖 My Badges</button>
+  <button onclick="changePlayerName()">✏️ Change Name</button>
 
 <div class="stats">
   Player: <span id="playerNameDisplay"></span><br>
@@ -1358,6 +1359,74 @@ window.shareBoard = function(){
   }
 };
 
+window.changePlayerName = async function(){
+  const currentName =
+    localStorage.getItem(STORAGE_PLAYER) ||
+    APP_CONFIG.anonymousPlayer;
+
+  const newName = prompt(
+    "Enter your Wing-O player name:",
+    currentName
+  );
+
+  if(!newName || !newName.trim()){
+    return;
+  }
+
+  const cleanedName = newName.trim();
+  const playerId = getPlayerId();
+
+  localStorage.setItem(STORAGE_PLAYER, cleanedName);
+
+  document.getElementById("playerNameDisplay").innerText = cleanedName;
+
+  try{
+    await setDoc(
+      doc(db, "players", playerId),
+      {
+        name: cleanedName,
+        updatedAt: serverTimestamp()
+      },
+      { merge:true }
+    );
+
+    await setDoc(
+      doc(
+        db,
+        "monthlyLeaderboards",
+        ACTIVE_SEASON_ID,
+        "players",
+        playerId
+      ),
+      {
+        name: cleanedName,
+        updatedAt: serverTimestamp()
+      },
+      { merge:true }
+    );
+
+    await setDoc(
+      doc(
+        db,
+        "yearlyLeaderboards",
+        ACTIVE_YEAR,
+        "players",
+        playerId
+      ),
+      {
+        name: cleanedName,
+        updatedAt: serverTimestamp()
+      },
+      { merge:true }
+    );
+
+    showToast(`Welcome, ${cleanedName}! 🍗`);
+  }catch(error){
+    console.error("Name update failed:", error);
+    showToast("Name changed on this phone");
+  }
+};
+  
 window.openMemories = function(){
   renderMyPhotos();
   showMemoryTab("my");

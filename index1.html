@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="theme-color" content="#ff7043">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wing-O">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="wingo-icon-192.png">
+
+<title>Wing-O 🍗</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  text-align:center;
+  background:linear-gradient(180deg,#111111,#2b2b2b);
+  padding:15px;
+  margin:0;
+  color:#ffffff;
+}
+
+h1{
+  font-size:30px;
+  color:#ff7043;
+}
+
+.sub{
+  color:#cccccc;
+  margin-bottom:15px;
+}
+
+#board{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  max-width:95vw;
+  margin:20px auto;
+}
+
+.square{
+  background:#2a2a2a;
+  border-radius:12px;
+  padding:8px;
+  font-size:12px;
+  line-height:1.2;
+  min-height:75px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid #555;
+  cursor:pointer;
+  user-select:none;
+  transition:0.2s;
+  position:relative;
+}
+
+.marked{
+  background:#d84315;
+  color:white;
+  font-weight:bold;
+}
+
+.square.photo-required::before{
+  content:"📸";
+  position:absolute;
+  top:5px;
+  right:6px;
+  font-size:17px;
+}
+
+.square.photo-square{
+  padding:0;
+  overflow:hidden;
+}
+
+.proof-photo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.photo-label{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  background:rgba(0,0,0,.55);
+  color:white;
+  font-size:10px;
+  padding:3px;
+}
+
+button{
+  background:#ff7043;
+  color:white;
+  border:none;
+  padding:12px 18px;
+  font-size:16px;
+  border-radius:10px;
+  margin:5px;
+  cursor:pointer;
+}
+
+.stats{
+  margin-top:10px;
+  font-weight:bold;
+}
+
+.leaderboard,
+.community-gallery{
+  background:#1c1c1c;
+  border:2px solid #444444;
+  border-radius:14px;
+  padding:15px;
+  margin-top:20px;
+  box-shadow:0 5px 15px rgba(0,0,0,.28);
+}
+
+.leaderboard h2,
+.community-gallery h2{
+  color:#ff7043;
+  margin-top:0;
+}
+
+.leaderboard-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+  border-bottom:1px solid #333333;
+}
+
+.photo-gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:12px;
+  margin-top:15px;
+}
+
+.photo-card{
+  background:#2b2b2b;
+  border-radius:12px;
+  padding:8px;
+  text-align:center;
+}
+
+.photo-card img{
+  width:100%;
+  height:135px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.photo-card p{
+  margin:5px 0;
+  font-size:12px;
+}
+
+
+.memories-panel{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:99997;
+}
+
+.memories-content{
+  background:#1c1c1c;
+  color:white;
+  width:100%;
+  max-width:760px;
+  max-height:86vh;
+  overflow:auto;
+  border-radius:24px 24px 0 0;
+  padding:16px;
+  box-shadow:0 -8px 30px rgba(0,0,0,.28);
+}
+
+.memories-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.memories-header h2{
+  color:#ff7043;
+  margin:0;
+}
+
+.close-memory{
+  background:#ffffff;
+  color:#1c1c1c;
+  padding:8px 12px;
+  font-size:14px;
+}
+
+.memory-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:15px 0;
+}
+
+.memory-tabs button{
+  padding:10px 8px;
+  font-size:13px;
+  margin:0;
+}
+
+.memory-tabs button.active{
+  background:#d84315;
+}
+
+.memory-view{
+  min-height:160px;
+}
+
+.memory-actions{
+  margin-bottom:10px;
+}
+
+.stat-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  background:#2b2b2b;
+  border-radius:12px;
+  padding:10px;
+  margin:8px 0;
+  text-align:left;
+}
+
+.stat-row strong{
+  color:#ff7043;
+}
+
+.app-logo-header{
+  text-align:center;
+  margin:5px auto 12px;
+}
+
+.board-logo{
+  width:190px;
+  max-width:70vw;
+  height:auto;
+  border-radius:24px;
+  display:block;
+  margin:0 auto;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,.18));
+}
+
+#loadingScreen{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(180deg,#111111,#2b2b2b);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  overflow:hidden;
+  transition:opacity .6s ease;
+}
+
+.logo-wrapper{
+  z-index:5;
+  margin-bottom:20px;
+}
+
+.loading-logo{
+  width:240px;
+  max-width:75vw;
+  animation:floatLogo 3s ease-in-out infinite, fadeIn .8s ease;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.25));
+}
+
+@keyframes floatLogo{
+  0%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+  100%{transform:translateY(0);}
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:scale(.85);}
+  to{opacity:1; transform:scale(1);}
+}
+
+.loading-bar{
+  width:260px;
+  height:18px;
+  background:white;
+  border-radius:999px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);
+  z-index:5;
+}
+
+.loading-progress{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#d84315,#ff7043);
+  animation:loadBar 3s forwards;
+}
+
+@keyframes loadBar{
+  from{width:0%;}
+  to{width:100%;}
+}
+
+#loadingText{
+  font-size:20px;
+  color:#ffffff;
+  font-weight:bold;
+  margin:18px 0;
+  z-index:5;
+}
+
+#toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:black;
+  color:white;
+  padding:10px 15px;
+  border-radius:20px;
+  display:none;
+  z-index:99999;
+}
+
+.confetti-piece{
+  position:fixed;
+  top:-10px;
+  font-size:22px;
+  z-index:99998;
+  animation:confettiFall 2.5s linear forwards;
+  pointer-events:none;
+}
+
+@keyframes confettiFall{
+  to{
+    transform:translateY(110vh) rotate(720deg);
+    opacity:0;
+  }
+}
+
+#blackoutOverlay{
+  position:fixed;
+  inset:0;
+  background:black;
+  color:white;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:100000;
+}
+
+.blackoutText{
+  font-size:42px;
+  font-weight:bold;
+  animation:blackoutFlash .6s infinite alternate;
+  text-align:center;
+}
+
+.blackoutSub{
+  font-size:18px;
+  margin-top:12px;
+  color:#d84315;
+}
+
+@keyframes blackoutFlash{
+  from{color:white; transform:scale(1);}
+  to{color:#d84315; transform:scale(1.08);}
+}
+
+.version{
+  margin-top:25px;
+  color:#999999;
+  font-size:12px;
+  text-align:center;
+}
+.admin-panel{
+  position:fixed;
+  bottom:70px;
+  right:15px;
+
+  background:#fff;
+  color:#333;
+
+  padding:15px;
+  border-radius:15px;
+
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+
+  z-index:9999;
+}
+
+.admin-panel button{
+  width:100%;
+}
+
+.admin-panel input,
+.admin-panel textarea{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #ccc;
+  border-radius:10px;
+  padding:10px;
+  font-size:14px;
+  font-family:Arial,sans-serif;
+}
+
+.admin-panel textarea{
+  min-height:220px;
+}
+
+
+/* ==============================
+   LEADERBOARDS / PROFILES / BADGES
+============================== */
+.leaderboard-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:12px 0;
+}
+.leaderboard-tabs button{margin:0;padding:10px 6px;font-size:13px;}
+.leaderboard-view{background:#1c1c1c;color:#ffffff;border:2px solid #444444;border-radius:14px;padding:12px;margin-top:10px;}
+.leaderboard-view h3{color:#ff7043;margin:4px 0 10px;}
+
+.leaderboard-view .leaderboard-row,
+.leaderboard-view .leaderboard-row span,
+.leaderboard-view .leaderboard-row strong{
+  color:#ffffff;
+}
+
+.leaderboard-view .leaderboard-row{
+  border-bottom:1px solid #333333;
+}
+
+.leaderboard-view .stat-row{
+  background:#2b2b2b;
+  color:#ffffff;
+}
+
+.leaderboard-view .stat-row strong{
+  color:#ff7043;
+}
+
+.badge-chip{display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #444444;border-radius:999px;padding:5px 9px;margin:3px;font-size:12px;}
+.modal-panel{position:fixed;inset:0;background:rgba(0,0,0,.58);display:flex;align-items:center;justify-content:center;padding:15px;z-index:99996;}
+.modal-card{background:#1c1c1c;color:white;width:min(720px,95vw);max-height:88vh;overflow:auto;border-radius:20px;padding:18px;box-shadow:0 10px 35px rgba(0,0,0,.35);text-align:left;}
+.modal-card h2,.modal-card h3{color:#ff7043;text-align:center;}
+.modal-card label{display:block;font-weight:bold;margin-top:10px;}
+.modal-card input,.modal-card select,.modal-card textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:10px;font:inherit;}
+.modal-actions{text-align:center;margin-top:14px;}
+.badge-definition{background:#2b2b2b;border-radius:12px;padding:10px;margin:9px 0;}
+.profile-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.profile-stat{background:#2b2b2b;border-radius:12px;padding:10px;text-align:center;}
+.small-note{font-size:12px;color:#cccccc;}
+
+</style>
+</head>
+
+<body>
+
+<input
+  id="photoProofInput"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  style="display:none"
+/>
+
+<div id="blackoutOverlay">
+  <div class="blackoutText">WING-O BLACKOUT CHAMPION</div>
+  <div class="blackoutSub">You conquered the board 🔥🍗🏆</div>
+</div>
+
+<div id="loadingScreen">
+  <div class="logo-wrapper">
+    <img src="wingo-icon-192.png" alt="Wing-O" class="loading-logo">
+  </div>
+
+  <p id="loadingText">Loading while you get loaded 🍺🍺🍺 ...</p>
+
+  <div class="loading-bar">
+    <div class="loading-progress"></div>
+  </div>
+</div>
+
+<div class="app-logo-header">
+  <img src="wingo-icon-192.png" alt="Wing-O Logo" class="board-logo">
+</div>
+
+<h1>🍗 Wing-O 🍺</h1>
+<div class="sub">Monthly Edition • Tap squares as game day unfolds 🍺</div>
+
+<button onclick="generateBoard()">🎲 New Board</button>
+<button onclick="resetBoard()">↺ Reset My Board</button>
+<button onclick="shareBoard()">📤 Share</button>
+<button onclick="openMemories()">📸 Memories</button>
+<button onclick="openProfile()">🎖 My Badges</button>
+  <button onclick="changePlayerName()">✏️ Change Name</button>
+
+<div class="stats">
+  Player: <span id="playerNameDisplay"></span><br>
+  Marked: <span id="markedCount">1</span> |
+  Bingos: <span id="bingoCount">0</span> |
+  Score: <span id="scoreDisplay">0</span>
+</div>
+
+<div id="board"></div>
+
+<div class="leaderboard">
+  <h2>🏆 Wing-O Leaderboards</h2>
+  <div class="leaderboard-tabs">
+    <button id="monthLeaderboardTab" onclick="showLeaderboard('month')">🍗 Month</button>
+    <button id="yearLeaderboardTab" onclick="showLeaderboard('year')">🏆 Year</button>
+    <button id="hallLeaderboardTab" onclick="showLeaderboard('hall')">👑 Hall of Fame</button>
+  </div>
+  <div id="monthlyLeaderboard" class="leaderboard-view">Loading monthly leaderboard...</div>
+  <div id="yearlyLeaderboard" class="leaderboard-view" style="display:none;">Loading yearly leaderboard...</div>
+  <div id="hallOfFame" class="leaderboard-view" style="display:none;">Loading Hall of Fame...</div>
+</div>
+
+<div id="memoriesPanel" class="memories-panel" style="display:none;">
+  <div class="memories-content">
+    <div class="memories-header">
+      <h2>📸 Wing-O Monthly Memories</h2>
+      <button class="close-memory" onclick="closeMemories()">❌</button>
+    </div>
+
+    <div class="memory-tabs">
+      <button id="myPhotosTab" onclick="showMemoryTab('my')">📷 My Photos</button>
+      <button id="communityTab" onclick="showMemoryTab('community')">🌍 Community</button>
+      <button id="statsTab" onclick="showMemoryTab('stats')">🔥 Hot Squares</button>
+    </div>
+
+    <div id="myPhotosView" class="memory-view">
+      <div class="memory-actions">
+        <button onclick="printMyPhotos()">🖨️ Save / Print My Album</button>
+      </div>
+      <div id="myPhotosGallery" class="photo-gallery">No photo proofs yet 📸</div>
+    </div>
+
+    <div id="communityView" class="memory-view" style="display:none;">
+      <div id="communityGallery" class="photo-gallery">Loading community photos...</div>
+    </div>
+
+    <div id="statsView" class="memory-view" style="display:none;">
+      <div id="photoStatsList">No community photo stats yet 📸</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="version" id="versionLabel">
+  Wing-O v4.1.0 • Social Season Edition 🍗
+</div>
+<div id="adminPanel" class="admin-panel" style="display:none;">
+
+  <h3>🛠 Admin Mode</h3>
+
+  <button onclick="openSeasonEditor()">
+    🍗 Edit Current Season
+  </button>
+
+  <button onclick="adminReset()">
+    🧹 Reset Leaderboard
+  </button>
+ 
+  <button onclick="finalizeMonth()">
+    🏁 Finalize Month
+  </button>
+
+  <button onclick="openBadgeManager()">🎖 Manage Badges</button>
+
+  <button onclick="openEligibilityManager()">✅ Winner Eligibility</button>
+
+  <button onclick="recoverMonthlyScores()">🛟 Recover Monthly Scores</button>
+
+  <button onclick="migrateJulyLeaderboard()">♻️ Restore Legacy July Scores</button>
+  
+  <button onclick="resetYearlyLeaderboard()">⚠️ Reset Yearly Leaderboard</button>
+
+  <button onclick="generateBoard()">
+    🎲 Generate New Board
+  </button>
+
+  <button onclick="resetBoard()">
+    🔄 Reset My Board
+  </button>
+
+  <button onclick="closeAdminPanel()">
+    ❌ Close
+  </button>
+
+</div>
+
+<div id="eligibilityPanel" class="modal-panel" style="display:none;">
+  <div class="modal-card">
+    <h2>✅ Winner Eligibility</h2>
+    <p class="small-note">Players marked as testing can still score and earn badges, but cannot become the official monthly winner.</p>
+    <div id="eligibilityList">Loading players...</div>
+    <div class="modal-actions"><button onclick="closeEligibilityManager()">Close</button></div>
+  </div>
+</div>
+
+<div id="finalizePanel" class="modal-panel" style="display:none;">
+  <div class="modal-card">
+    <h2>🏁 Finalize Month</h2>
+    <div id="finalizeSummary">Loading monthly results...</div>
+    <label>Official winner</label>
+    <select id="finalWinnerSelect"></select>
+    <p class="small-note">The highest-scoring eligible player is selected automatically. You may choose another eligible player before confirming.</p>
+    <div class="modal-actions">
+      <button onclick="confirmFinalizeMonth()">👑 Confirm & Archive</button>
+      <button onclick="closeFinalizeMonth()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="seasonEditorPanel" class="admin-panel" style="display:none;">
+  <h3>🍗 Season Editor</h3>
+
+  <input id="seasonName" placeholder="July 2026" style="width:100%;padding:8px;box-sizing:border-box;">
+
+  <p style="font-size:13px;margin:0;">
+    One square per line. Add * at the end if photo evidence is required.
+  </p>
+
+  <textarea id="seasonSquares" rows="14"></textarea>
+
+  <label style="font-size:13px;font-weight:bold;">Chaos Agent qualifying squares</label>
+  <p style="font-size:12px;margin:0;">One square per line. These can change each month.</p>
+  <textarea id="chaosSquares" rows="5" placeholder="Fire Alarm 🚨&#10;TVs Go Out"></textarea>
+
+  <button onclick="saveActiveSeason()">💾 Save Season</button>
+  <button onclick="closeSeasonEditor()">❌ Close Editor</button>
+</div>
+
+
+
+<div id="profilePanel" class="modal-panel" style="display:none;">
+  <div class="modal-card">
+    <h2>🎖 My Wing-O Profile</h2>
+    <div id="profileContent">Loading profile...</div>
+    <div class="modal-actions"><button onclick="closeProfile()">Close</button></div>
+  </div>
+</div>
+
+<div id="badgeManagerPanel" class="modal-panel" style="display:none;">
+  <div class="modal-card">
+    <h2>🎖 Badge Manager</h2>
+    <p class="small-note">Automatic badges are checked after score or photo updates. Month-end badges are awarded when you finalize the month. Manual badges can be awarded below.</p>
+
+    <input id="badgeId" type="hidden">
+    <label>Badge name</label>
+    <input id="badgeName" placeholder="Photo Master">
+    <label>Emoji</label>
+    <input id="badgeIcon" placeholder="📸">
+    <label>Description</label>
+    <input id="badgeDescription" placeholder="Submit 10 photo proofs.">
+    <label>Trigger</label>
+    <select id="badgeTrigger">
+      <option value="photos">Total photos</option>
+      <option value="bingos">Total bingos</option>
+      <option value="blackouts">Total blackouts</option>
+      <option value="score">Yearly score</option>
+      <option value="monthly_winner">Monthly winner</option>
+      <option value="most_photos">Most photos in month</option>
+      <option value="most_bingos">Most bingos in month</option>
+      <option value="shares">Board shares</option>
+      <option value="referrals">Successful referrals</option>
+      <option value="photo_appearances">Photo appearances</option>
+      <option value="photo_people">Photo with 3+ people</option>
+      <option value="photos_one_night">Photo challenges in one night</option>
+      <option value="consecutive_days">Consecutive play days</option>
+      <option value="weekend_days">Friday, Saturday, and Sunday participation</option>
+      <option value="consecutive_months">Consecutive months played</option>
+      <option value="time_after_midnight">Activity after midnight</option>
+      <option value="time_before_noon">Activity before noon</option>
+      <option value="specific_square">Specific square completed</option>
+      <option value="specific_photo_square">Specific photo-proof square completed</option>
+      <option value="chaos_square">Monthly Chaos Agent square</option>
+      <option value="pure_luck">Bingo with no photo-proof squares</option>
+      <option value="manual">Manual award</option>
+    </select>
+    <label>Requirement detail</label>
+    <input id="badgeCondition" placeholder="Example: Ding Dong Win">
+    <p class="small-note">Use this for a specific square. Chaos Agent uses the monthly chaos-square list.</p>
+    <label>Threshold</label>
+    <input id="badgeThreshold" type="number" min="1" value="1">
+    <label><input id="badgeActive" type="checkbox" checked style="width:auto;"> Active</label>
+    <div class="modal-actions">
+      <button onclick="saveBadgeDefinition()">💾 Save Badge</button>
+      <button onclick="clearBadgeForm()">Clear Form</button>
+    </div>
+
+    <h3>Existing Badges</h3>
+    <div id="badgeDefinitionList">Loading...</div>
+
+    <h3>Manual Award</h3>
+    <label>Player</label>
+    <select id="manualBadgePlayer"></select>
+    <label>Badge</label>
+    <select id="manualBadgeDefinition"></select>
+    <div class="modal-actions"><button onclick="awardManualBadge()">🎁 Award Badge</button></div>
+
+    <div class="modal-actions"><button onclick="closeBadgeManager()">Close</button></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  onSnapshot,
+  serverTimestamp,
+  runTransaction,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+import {
+  getStorage,
+  ref,
+  uploadString,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDn51OcgXj-e611KeLvC__Mx9OAhCX-zxE",
+  authDomain: "wing-o-26198.firebaseapp.com",
+  projectId: "wing-o-26198",
+  storageBucket: "wing-o-26198.firebasestorage.app",
+  messagingSenderId: "308387774006",
+  appId: "1:308387774006:web:eac5aa77978fb48a286297",
+  measurementId: "G-V44WDV57WD"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+const BACKUP_WORD_BANK = [
+  { text:"Someone orders Zamunda Fire", photo:true },
+  "USA WIN",
+  { text:"Someone wins Shaker", photo:true },
+  "Whole Bar Shot",
+  "Bartender drunker than you",
+  "FUCKIN JENGA",
+  "Former Employee Visit",
+  "Reid Yells at You",
+  "Former Employee walks in",
+  "Someone yells at TV",
+  "Jukebox Wars",
+  "Hootin and Hollerin",
+  "Weird Bathroom Encounter",
+  "Server Vaping",
+  { text:"Birthday shot", photo:true },
+  "Bartender MIA",
+  "Treats",
+  "Ring Toss Win",
+  "Ding Dong Win",
+  "Last call linger-er",
+  { text:"Steel Drum", photo:true },
+  "Package",
+  "One more",
+  "Someone loses phone",
+  { text:"Wing Festival Visit", photo:true },
+  "Bar-sing-along",
+  "PDA",
+  "Waffle House after this"
+];
+let WORD_BANK = [...BACKUP_WORD_BANK];
+
+const APP_ID = "wingo";
+const ACTIVE_SEASON_DOC = doc(db, "appSettings", APP_ID);
+const BADGE_COLLECTION = "badgeDefinitions";
+const PLAYER_COLLECTION = "players";
+const MONTHLY_COLLECTION = "monthlyLeaderboards";
+const YEARLY_COLLECTION = "yearlyLeaderboards";
+const HALL_COLLECTION = "hallOfFame";
+
+let ACTIVE_SEASON_ID = new Date().toISOString().slice(0,7);
+let ACTIVE_SEASON_NAME = new Date().toLocaleString("default", {month:"long",year:"numeric"});
+let ACTIVE_YEAR = new Date().getFullYear().toString();
+let badgeDefinitionsCache = [];
+let ACTIVE_CHAOS_SQUARES = [];
+let currentPhotoMeta = null;
+let unsubscribeMonthlyLeaderboard = null;
+let unsubscribeYearlyLeaderboard = null;
+let unsubscribeCommunityGallery = null;
+let finalizePlayersCache = [];
+
+const STORAGE_BOARD = "wingo_board";
+const STORAGE_MARKED = "wingo_marked";
+const STORAGE_LINES = "wingo_lines";
+const STORAGE_PLAYER = "wingo_player";
+const STORAGE_ID = "wingo_player_id";
+const STORAGE_BLACKOUT = "wingo_blackout";
+const STORAGE_PHOTOS = "wingo_photos";
+const STORAGE_SEASON = "wingo_active_season";
+const STORAGE_REFERRAL = "wingo_referral_processed";
+
+let pendingPhotoSquare = null;
+let pendingPhotoIndex = null;
+
+const wins = [
+  [0,1,2,3,4],
+  [5,6,7,8,9],
+  [10,11,12,13,14],
+  [15,16,17,18,19],
+  [20,21,22,23,24],
+  [0,5,10,15,20],
+  [1,6,11,16,21],
+  [2,7,12,17,22],
+  [3,8,13,18,23],
+  [4,9,14,19,24],
+  [0,6,12,18,24],
+  [4,8,12,16,20]
+];
+
+function getPlayerId(){
+  let id = localStorage.getItem(STORAGE_ID);
+
+  if(!id){
+    id = crypto.randomUUID();
+    localStorage.setItem(STORAGE_ID,id);
+  }
+
+  return id;
+}
+
+function getPlayerName(){
+  let name = localStorage.getItem(STORAGE_PLAYER);
+
+  if(!name){
+    name = prompt("Enter your Wing-O player name:");
+
+    if(!name){
+      name = "Anonymous Wing-O Player";
+    }
+
+    localStorage.setItem(STORAGE_PLAYER,name);
+  }
+
+  document.getElementById("playerNameDisplay").innerText = name;
+  return name;
+}
+
+async function ensureCurrentPlayerEligibility(){
+  const playerId=getPlayerId();
+  const playerName=getPlayerName();
+  const profileRef=doc(db,PLAYER_COLLECTION,playerId);
+  const snap=await getDoc(profileRef);
+  if(!snap.exists() || typeof snap.data().eligibleForWinner!=="boolean"){
+    // Cassidy is the established Wing-O testing profile. Once stored, eligibility
+    // follows this unique player ID even if its display name later changes.
+    const eligibleForWinner=playerName.trim().toLowerCase()!=="cassidy";
+    await setDoc(profileRef,{name:playerName,eligibleForWinner,updatedAt:serverTimestamp()},{merge:true});
+    await Promise.all([
+      setDoc(doc(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players",playerId),{name:playerName,eligibleForWinner,updatedAt:serverTimestamp()},{merge:true}),
+      setDoc(doc(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players",playerId),{name:playerName,eligibleForWinner,updatedAt:serverTimestamp()},{merge:true})
+    ]);
+  }
+}
+
+window.changePlayerName = async function(){
+  const currentName = localStorage.getItem(STORAGE_PLAYER) || "Anonymous Wing-O Player";
+  const entered = prompt("Enter your new Wing-O name:", currentName);
+  if(!entered || !entered.trim()) return;
+
+  const newName = entered.trim().slice(0,40);
+  const playerId = getPlayerId();
+  localStorage.setItem(STORAGE_PLAYER,newName);
+  document.getElementById("playerNameDisplay").innerText = newName;
+
+  await Promise.all([
+    setDoc(doc(db,PLAYER_COLLECTION,playerId),{name:newName,updatedAt:serverTimestamp()},{merge:true}),
+    setDoc(doc(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players",playerId),{name:newName,updatedAt:serverTimestamp()},{merge:true}),
+    setDoc(doc(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players",playerId),{name:newName,updatedAt:serverTimestamp()},{merge:true})
+  ]);
+
+  showToast("Player name updated 🍗");
+};
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i],array[j]] = [array[j],array[i]];
+  }
+
+  return array;
+}
+
+function getSquareText(item){
+  return typeof item === "string" ? item : item.text;
+}
+
+function requiresPhoto(item){
+  return typeof item === "object" && item.photo === true;
+}
+
+function getCurrentSeasonId(){
+  return ACTIVE_SEASON_ID;
+}
+
+function getCurrentSeasonName(){
+  return ACTIVE_SEASON_NAME;
+}
+
+function parseSeasonNameToId(seasonName){
+  const parsed = new Date(`1 ${seasonName}`);
+  if(Number.isNaN(parsed.getTime())) return null;
+  return `${parsed.getFullYear()}-${String(parsed.getMonth()+1).padStart(2,"0")}`;
+}
+
+function getBoard(){
+  let saved = localStorage.getItem(STORAGE_BOARD);
+  if(saved) return JSON.parse(saved);
+  let board = shuffle([...WORD_BANK]).slice(0,24);
+  localStorage.setItem(STORAGE_BOARD,JSON.stringify(board));
+  return board;
+}
+
+function clearLocalSeasonProgress(){
+  [STORAGE_BOARD,STORAGE_MARKED,STORAGE_LINES,STORAGE_BLACKOUT,STORAGE_PHOTOS].forEach(key=>localStorage.removeItem(key));
+}
+
+async function loadActiveSeason(){
+  try{
+    const seasonSnap = await getDoc(ACTIVE_SEASON_DOC);
+    if(seasonSnap.exists()){
+      const data = seasonSnap.data();
+      if(data.squares && data.squares.length >= 24) WORD_BANK = data.squares;
+      ACTIVE_SEASON_ID = data.seasonId || ACTIVE_SEASON_ID;
+      ACTIVE_SEASON_NAME = data.seasonName || ACTIVE_SEASON_NAME;
+      ACTIVE_YEAR = String((ACTIVE_SEASON_ID || "").slice(0,4) || new Date().getFullYear());
+      ACTIVE_CHAOS_SQUARES = Array.isArray(data.chaosSquares) ? data.chaosSquares : [];
+    }else{
+      WORD_BANK = [...BACKUP_WORD_BANK];
+    }
+  }catch(error){
+    console.error("Season load failed:", error);
+    WORD_BANK = [...BACKUP_WORD_BANK];
+    showToast("Using backup board 🍗");
+  }
+
+  const savedSeason = localStorage.getItem(STORAGE_SEASON);
+  if(savedSeason && savedSeason !== ACTIVE_SEASON_ID) clearLocalSeasonProgress();
+  localStorage.setItem(STORAGE_SEASON,ACTIVE_SEASON_ID);
+}
+
+function localDateKey(date=new Date()){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,"0");
+  const d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function nightKey(date=new Date()){
+  const shifted=new Date(date);
+  if(shifted.getHours()<6) shifted.setDate(shifted.getDate()-1);
+  return localDateKey(shifted);
+}
+
+function monthIndex(seasonId){
+  const [y,m]=seasonId.split("-").map(Number);
+  return y*12+(m-1);
+}
+
+function hasConsecutiveMonths(seasons,count){
+  const values=[...new Set(seasons)].sort().map(monthIndex);
+  let streak=1;
+  for(let i=1;i<values.length;i++){
+    streak=values[i]===values[i-1]+1?streak+1:1;
+    if(streak>=count) return true;
+  }
+  return count<=1 && values.length>0;
+}
+
+function hasConsecutiveDays(dateKeys,count){
+  const values=[...new Set(dateKeys)].sort().map(v=>new Date(`${v}T12:00:00`).getTime());
+  let streak=1;
+  for(let i=1;i<values.length;i++){
+    const diff=Math.round((values[i]-values[i-1])/86400000);
+    streak=diff===1?streak+1:1;
+    if(streak>=count) return true;
+  }
+  return count<=1 && values.length>0;
+}
+
+function hasWeekendSet(dateKeys){
+  const set=new Set(dateKeys);
+  for(const key of set){
+    const d=new Date(`${key}T12:00:00`);
+    if(d.getDay()!==5) continue;
+    const sat=new Date(d);sat.setDate(d.getDate()+1);
+    const sun=new Date(d);sun.setDate(d.getDate()+2);
+    if(set.has(localDateKey(sat))&&set.has(localDateKey(sun))) return true;
+  }
+  return false;
+}
+
+async function recordActivity({squareText=null,photo=false,share=false,peopleCount=0,pureLuck=false}={}){
+  const playerId=getPlayerId();
+  const profileRef=doc(db,PLAYER_COLLECTION,playerId);
+  const now=new Date();
+  const dateKey=localDateKey(now);
+  const thisNight=nightKey(now);
+
+  await runTransaction(db,async transaction=>{
+    const snap=await transaction.get(profileRef);
+    const profile=snap.exists()?snap.data():{};
+    const activeDates=Array.from(new Set([...(profile.activeDates||[]),dateKey]));
+    const seasonsPlayed=Array.from(new Set([...(profile.seasonsPlayed||[]),ACTIVE_SEASON_ID]));
+    const photosByNight={...(profile.photosByNight||{})};
+    if(photo) photosByNight[thisNight]=(photosByNight[thisNight]||0)+1;
+
+    transaction.set(profileRef,{
+      name:getPlayerName(),
+      activeDates,
+      seasonsPlayed,
+      shares:(profile.shares||0)+(share?1:0),
+      referrals:profile.referrals||0,
+      photoAppearances:profile.photoAppearances||0,
+      photosWithThreePlus:(profile.photosWithThreePlus||0)+(peopleCount>=3?1:0),
+      photosByNight,
+      afterMidnightActions:(profile.afterMidnightActions||0)+(now.getHours()<5?1:0),
+      beforeNoonActions:(profile.beforeNoonActions||0)+(now.getHours()<12?1:0),
+      pureLuckBingos:(profile.pureLuckBingos||0)+(pureLuck?1:0),
+      completedSquares:Array.from(new Set([...(profile.completedSquares||[]),...(squareText?[squareText]:[])])),
+      completedPhotoSquares:Array.from(new Set([...(profile.completedPhotoSquares||[]),...(photo&&squareText?[squareText]:[])])),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+  });
+
+  await checkAutomaticBadges(playerId);
+}
+
+async function processReferral(){
+  const params=new URLSearchParams(window.location.search);
+  const referrerId=params.get("ref");
+  if(!referrerId || referrerId===getPlayerId() || localStorage.getItem(STORAGE_REFERRAL)) return;
+
+  const referrerRef=doc(db,PLAYER_COLLECTION,referrerId);
+  await runTransaction(db,async transaction=>{
+    const snap=await transaction.get(referrerRef);
+    const current=snap.exists()?snap.data():{};
+    transaction.set(referrerRef,{referrals:(current.referrals||0)+1,updatedAt:serverTimestamp()},{merge:true});
+  });
+  localStorage.setItem(STORAGE_REFERRAL,referrerId);
+  await checkAutomaticBadges(referrerId);
+}
+
+async function incrementPhotoAppearances(taggedNames){
+  if(!taggedNames.length) return;
+  const profiles=await getDocs(collection(db,PLAYER_COLLECTION));
+  const normalized=new Map();
+  profiles.forEach(d=>normalized.set((d.data().name||"").trim().toLowerCase(),d.id));
+  for(const name of taggedNames){
+    const playerId=normalized.get(name.trim().toLowerCase());
+    if(!playerId) continue;
+    const profileRef=doc(db,PLAYER_COLLECTION,playerId);
+    await runTransaction(db,async transaction=>{
+      const snap=await transaction.get(profileRef);
+      const current=snap.exists()?snap.data():{};
+      transaction.set(profileRef,{photoAppearances:(current.photoAppearances||0)+1,updatedAt:serverTimestamp()},{merge:true});
+    });
+    await checkAutomaticBadges(playerId);
+  }
+}
+
+function buildBoard(){
+  const boardDiv = document.getElementById("board");
+  boardDiv.innerHTML = "";
+
+  let boardWords = [...getBoard()];
+  let savedMarked = JSON.parse(localStorage.getItem(STORAGE_MARKED) || "[12]");
+  let savedPhotos = JSON.parse(localStorage.getItem(STORAGE_PHOTOS) || "{}");
+
+  for(let i=0;i<25;i++){
+    const square = document.createElement("div");
+    square.classList.add("square");
+
+    if(i === 12){
+      square.innerText = "FREE 🍗";
+      square.classList.add("marked");
+    }else{
+      const item = boardWords.shift();
+      square.dataset.item = JSON.stringify(item);
+
+      if(savedPhotos[i]){
+        square.innerHTML = `
+          <img src="${savedPhotos[i]}" class="proof-photo">
+          <div class="photo-label">Photo Proof</div>
+        `;
+        square.classList.add("marked","photo-square");
+      }else{
+        square.innerText = getSquareText(item);
+
+        if(requiresPhoto(item)){
+          square.classList.add("photo-required");
+        }
+      }
+    }
+
+    if(savedMarked.includes(i)){
+      square.classList.add("marked");
+    }
+
+    square.onclick = () => handleSquareClick(square,i);
+    boardDiv.appendChild(square);
+  }
+
+  updateStats();
+}
+
+function handleSquareClick(square,index){
+  if(index === 12){
+    return;
+  }
+
+  const item = JSON.parse(square.dataset.item || "{}");
+
+  if(requiresPhoto(item) && !square.classList.contains("photo-square")){
+    pendingPhotoSquare = square;
+    pendingPhotoIndex = index;
+    document.getElementById("photoProofInput").click();
+    return;
+  }
+
+  const wasMarked = square.classList.contains("marked");
+  square.classList.toggle("marked");
+  saveMarked();
+  updateStats();
+  if(!wasMarked){
+    recordActivity({squareText:getSquareText(item)});
+  }
+  checkBingo();
+}
+
+function saveMarked(){
+  const squares = document.querySelectorAll(".square");
+  const marked = [];
+
+  squares.forEach((square,index)=>{
+    if(square.classList.contains("marked")){
+      marked.push(index);
+    }
+  });
+
+  localStorage.setItem(STORAGE_MARKED,JSON.stringify(marked));
+}
+
+document.getElementById("photoProofInput").addEventListener("change",function(event){
+  const file = event.target.files[0];
+
+  if(!file || !pendingPhotoSquare){
+    return;
+  }
+
+  resizePhoto(file,async function(photoData){
+    const item = JSON.parse(pendingPhotoSquare.dataset.item || "{}");
+    const squareText = getSquareText(item);
+
+    const savedPhotos = JSON.parse(localStorage.getItem(STORAGE_PHOTOS) || "{}");
+    savedPhotos[pendingPhotoIndex] = photoData;
+    localStorage.setItem(STORAGE_PHOTOS,JSON.stringify(savedPhotos));
+
+    pendingPhotoSquare.innerHTML = `
+      <img src="${photoData}" class="proof-photo">
+      <div class="photo-label">Photo Proof</div>
+    `;
+
+    pendingPhotoSquare.classList.add("marked","photo-square");
+    pendingPhotoSquare.classList.remove("photo-required");
+
+    saveMarked();
+    updateStats();
+    checkBingo();
+
+    const threePlus = confirm("Does this photo include 3 or more people?");
+    const taggedInput = prompt("Optional: enter Wing-O player names shown in the photo, separated by commas.");
+    const taggedPlayers = (taggedInput || "").split(",").map(name=>name.trim()).filter(Boolean);
+    currentPhotoMeta = {
+      peopleCount: threePlus ? 3 : 0,
+      taggedPlayers
+    };
+
+    await recordActivity({squareText,photo:true,peopleCount:currentPhotoMeta.peopleCount});
+    await incrementPhotoAppearances(taggedPlayers);
+
+    showToast("Photo proof complete 📸");
+
+    await uploadPhotoToSharedGallery(squareText, photoData, currentPhotoMeta);
+
+    pendingPhotoSquare = null;
+    pendingPhotoIndex = null;
+    event.target.value = "";
+  });
+});
+
+function resizePhoto(file,callback){
+  const reader = new FileReader();
+
+  reader.onload = function(event){
+    const img = new Image();
+
+    img.onload = function(){
+      const canvas = document.createElement("canvas");
+      const size = 400;
+
+      canvas.width = size;
+      canvas.height = size;
+
+      const ctx = canvas.getContext("2d");
+
+      const scale = Math.max(size / img.width, size / img.height);
+      const x = size / 2 - img.width / 2 * scale;
+      const y = size / 2 - img.height / 2 * scale;
+
+      ctx.drawImage(img,x,y,img.width * scale,img.height * scale);
+
+      callback(canvas.toDataURL("image/jpeg",0.75));
+    };
+
+    img.src = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function updateStats(){
+  const markedCount = document.querySelectorAll(".square.marked").length;
+  const claimedLines = JSON.parse(localStorage.getItem(STORAGE_LINES) || "[]");
+
+  document.getElementById("markedCount").innerText = markedCount;
+  document.getElementById("bingoCount").innerText = claimedLines.length;
+}
+
+async function updatePlayerStats({scorePoints=0,bingos=0,blackouts=0,photos=0,squareText=null}={}){
+  const playerId = getPlayerId();
+  const playerName = getPlayerName();
+  const monthlyRef = doc(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players",playerId);
+  const yearlyRef = doc(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players",playerId);
+  const profileRef = doc(db,PLAYER_COLLECTION,playerId);
+
+  await runTransaction(db, async transaction => {
+    const [monthSnap,yearSnap,profileSnap] = await Promise.all([
+      transaction.get(monthlyRef),transaction.get(yearlyRef),transaction.get(profileRef)
+    ]);
+    const month = monthSnap.exists()?monthSnap.data():{};
+    const year = yearSnap.exists()?yearSnap.data():{};
+    const profile = profileSnap.exists()?profileSnap.data():{};
+    const squareHits = {...(month.squareHits||{})};
+    if(squareText) squareHits[squareText]=(squareHits[squareText]||0)+1;
+
+    transaction.set(monthlyRef,{
+      name:playerName,
+      eligibleForWinner:profile.eligibleForWinner!==false,
+      score:(month.score||0)+scorePoints,
+      bingos:(month.bingos||0)+bingos,
+      blackouts:(month.blackouts||0)+blackouts,
+      photos:(month.photos||0)+photos,
+      squareHits,
+      seasonId:ACTIVE_SEASON_ID,
+      seasonName:ACTIVE_SEASON_NAME,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+
+    transaction.set(yearlyRef,{
+      name:playerName,
+      eligibleForWinner:profile.eligibleForWinner!==false,
+      score:(year.score||0)+scorePoints,
+      bingos:(year.bingos||0)+bingos,
+      blackouts:(year.blackouts||0)+blackouts,
+      photos:(year.photos||0)+photos,
+      year:ACTIVE_YEAR,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+
+    const seasonsPlayed = Array.from(new Set([...(profile.seasonsPlayed||[]),ACTIVE_SEASON_ID]));
+    transaction.set(profileRef,{
+      name:playerName,
+      totalScore:(profile.totalScore||0)+scorePoints,
+      totalBingos:(profile.totalBingos||0)+bingos,
+      totalBlackouts:(profile.totalBlackouts||0)+blackouts,
+      totalPhotos:(profile.totalPhotos||0)+photos,
+      monthlyWins:profile.monthlyWins||0,
+      badges:profile.badges||[],
+      seasonsPlayed,
+      activeDates:profile.activeDates||[],
+      shares:profile.shares||0,
+      referrals:profile.referrals||0,
+      photoAppearances:profile.photoAppearances||0,
+      photosWithThreePlus:profile.photosWithThreePlus||0,
+      photosByNight:profile.photosByNight||{},
+      afterMidnightActions:profile.afterMidnightActions||0,
+      beforeNoonActions:profile.beforeNoonActions||0,
+      pureLuckBingos:profile.pureLuckBingos||0,
+      completedSquares:profile.completedSquares||[],
+      completedPhotoSquares:profile.completedPhotoSquares||[],
+      updatedAt:serverTimestamp()
+    },{merge:true});
+  });
+
+  const currentMonthly = await getDoc(monthlyRef);
+  document.getElementById("scoreDisplay").innerText = currentMonthly.data()?.score || 0;
+  await checkAutomaticBadges(playerId);
+}
+
+function checkBingo(){
+  const squares = document.querySelectorAll(".square");
+  const marked = [...squares].map(square=>square.classList.contains("marked"));
+  let claimedLines = JSON.parse(localStorage.getItem(STORAGE_LINES) || "[]");
+
+  wins.forEach((combo,index)=>{
+    if(combo.every(i=>marked[i]) && !claimedLines.includes(index)){
+      claimedLines.push(index);
+      localStorage.setItem(STORAGE_LINES,JSON.stringify(claimedLines));
+
+      const pureLuck = combo
+        .filter(i=>i!==12)
+        .every(i=>{
+          const item=JSON.parse(squares[i].dataset.item || "{}");
+          return !requiresPhoto(item);
+        });
+
+      showToast("PARADISE BINGO! +1 🍗🍹");
+      launchConfetti();
+      updatePlayerStats({scorePoints:1,bingos:1});
+      if(pureLuck) recordActivity({pureLuck:true});
+    }
+  });
+
+  if(marked.every(Boolean) && !localStorage.getItem(STORAGE_BLACKOUT)){
+    localStorage.setItem(STORAGE_BLACKOUT,"true");
+
+    showToast("PARADISE BLACKOUT! +5 🏆");
+    showBlackoutCelebration();
+    launchConfetti();
+    updatePlayerStats({scorePoints:5,blackouts:1});
+  }
+
+  updateStats();
+}
+
+function launchConfetti(){
+  const pieces = ["🍗","🍹","✨","🎉","🍻"];
+
+  for(let i=0;i<35;i++){
+    const piece = document.createElement("div");
+    piece.classList.add("confetti-piece");
+    piece.innerText = pieces[Math.floor(Math.random() * pieces.length)];
+    piece.style.left = Math.random() * 100 + "vw";
+    piece.style.animationDelay = Math.random() * .8 + "s";
+
+    document.body.appendChild(piece);
+
+    setTimeout(()=>{
+      piece.remove();
+    },3000);
+  }
+}
+
+function showBlackoutCelebration(){
+  const overlay = document.getElementById("blackoutOverlay");
+  overlay.style.display = "flex";
+
+  setTimeout(()=>{
+    overlay.style.display = "none";
+  },4500);
+}
+
+async function uploadPhotoToSharedGallery(squareText, photoDataUrl, meta={}){
+  try{
+    const playerName = getPlayerName();
+    const seasonId = getCurrentSeasonId();
+    const seasonName = getCurrentSeasonName();
+
+    const photoId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const photoPath = `bingoPhotos/${APP_ID}/${seasonId}/${photoId}.jpg`;
+
+    const storageRef = ref(storage, photoPath);
+
+    await uploadString(storageRef, photoDataUrl, "data_url");
+
+    const photoUrl = await getDownloadURL(storageRef);
+
+    await addDoc(collection(db,"photos"), {
+      app: APP_ID,
+      playerName: playerName,
+      squareText: squareText,
+      seasonId: seasonId,
+      seasonName: seasonName,
+      photoUrl: photoUrl,
+      playerId: getPlayerId(),
+      peopleCount: meta.peopleCount || 0,
+      taggedPlayers: meta.taggedPlayers || [],
+      createdAt: serverTimestamp()
+    });
+
+    await updatePlayerStats({photos:1,squareText:squareText});
+    showToast("Photo added to community gallery 📸");
+
+  }catch(error){
+    console.error("Shared gallery upload failed:", error);
+    showToast("Photo saved locally, but gallery upload failed");
+  }
+}
+
+function loadCommunityGallery(){
+  const gallery = document.getElementById("communityGallery");
+  const statsList = document.getElementById("photoStatsList");
+
+  if(!gallery){
+    return;
+  }
+
+  const seasonId = getCurrentSeasonId();
+
+  if(unsubscribeCommunityGallery) unsubscribeCommunityGallery();
+  unsubscribeCommunityGallery=onSnapshot(collection(db,"photos"), snapshot => {
+    gallery.innerHTML = "";
+
+    let photos = [];
+
+    snapshot.forEach(docSnap => {
+      const photo = docSnap.data();
+
+      if(photo.app === APP_ID && photo.seasonId === seasonId){
+        photos.push(photo);
+      }
+    });
+
+    photos.sort((a,b)=>{
+      const aTime = a.createdAt?.seconds || 0;
+      const bTime = b.createdAt?.seconds || 0;
+      return bTime - aTime;
+    });
+
+    if(photos.length === 0){
+      gallery.innerHTML = "No community photos yet 📸";
+      if(statsList){
+        statsList.innerHTML = "No community photo stats yet 📸";
+      }
+      return;
+    }
+
+    photos.forEach(photo => {
+      const card = document.createElement("div");
+      card.classList.add("photo-card");
+
+      card.innerHTML = `
+        <img src="${photo.photoUrl}" alt="${photo.squareText}">
+        <p><strong>${photo.squareText}</strong></p>
+        <p>${photo.playerName}</p>
+      `;
+
+      gallery.appendChild(card);
+    });
+
+    renderPhotoStats(photos);
+  });
+}
+
+function renderPhotoStats(photos){
+  const statsList = document.getElementById("photoStatsList");
+
+  if(!statsList){
+    return;
+  }
+
+  const counts = {};
+
+  photos.forEach(photo => {
+    const square = photo.squareText || "Unknown square";
+    counts[square] = (counts[square] || 0) + 1;
+  });
+
+  const ranked = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  if(ranked.length === 0){
+    statsList.innerHTML = "No community photo stats yet 📸";
+    return;
+  }
+
+  statsList.innerHTML = ranked.map(([square,count],index)=>`
+    <div class="stat-row">
+      <span>${index+1}. ${square}</span>
+      <strong>${count} photo${count === 1 ? "" : "s"}</strong>
+    </div>
+  `).join("");
+}
+
+function renderLeaderboardPlayers(container,players,title){
+  container.innerHTML = `<h3>${title}</h3>`;
+  if(players.length===0){container.innerHTML += "No scores yet.";return;}
+  players.sort((a,b)=>(b.score||0)-(a.score||0));
+  players.forEach((player,index)=>{
+    const row=document.createElement("div");
+    row.className="leaderboard-row";
+    const badgeIcons=(player.badges||[]).slice(-2).map(b=>b.icon).join(" ");
+    const testingLabel=player.eligibleForWinner===false?' <span class="small-note">(testing)</span>':'';
+    row.innerHTML=`<span>${getLeaderboardBadge(index,player.score)} ${index+1}. ${player.name||"Anonymous"}${testingLabel} ${badgeIcons}</span><strong>${player.score||0}</strong>`;
+    container.appendChild(row);
+  });
+}
+
+function listenMonthlyLeaderboard(){
+  if(unsubscribeMonthlyLeaderboard) unsubscribeMonthlyLeaderboard();
+  const ref=collection(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players");
+  unsubscribeMonthlyLeaderboard=onSnapshot(ref,snapshot=>{
+    const players=[];snapshot.forEach(d=>players.push({...d.data(),id:d.id}));
+    renderLeaderboardPlayers(document.getElementById("monthlyLeaderboard"),players,ACTIVE_SEASON_NAME);
+    const me=players.find(p=>p.id===getPlayerId());
+    if(me) document.getElementById("scoreDisplay").innerText=me.score||0;
+  },error=>{console.error(error);document.getElementById("monthlyLeaderboard").innerText="Monthly leaderboard unavailable.";});
+}
+
+function listenYearlyLeaderboard(){
+  if(unsubscribeYearlyLeaderboard) unsubscribeYearlyLeaderboard();
+  const ref=collection(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players");
+  unsubscribeYearlyLeaderboard=onSnapshot(ref,snapshot=>{
+    const players=[];snapshot.forEach(d=>players.push({...d.data(),id:d.id}));
+    renderLeaderboardPlayers(document.getElementById("yearlyLeaderboard"),players,`${ACTIVE_YEAR} Championship`);
+  },error=>{console.error(error);document.getElementById("yearlyLeaderboard").innerText="Yearly leaderboard unavailable.";});
+}
+
+function listenHallOfFame(){
+  onSnapshot(collection(db,HALL_COLLECTION),snapshot=>{
+    const records=[];snapshot.forEach(d=>{const x=d.data();if(x.app===APP_ID) records.push(x);});
+    records.sort((a,b)=>(b.seasonId||"").localeCompare(a.seasonId||""));
+    const el=document.getElementById("hallOfFame");
+    el.innerHTML="<h3>👑 Hall of Fame</h3>";
+    if(!records.length){el.innerHTML+="No finalized champions yet.";return;}
+    el.innerHTML+=records.map(r=>`<div class="stat-row"><span><strong>${r.seasonName}</strong><br>${r.winnerName||"No winner"}</span><strong>${r.winnerScore||0} pts</strong></div>`).join("");
+  });
+}
+
+window.showLeaderboard=function(type){
+  document.getElementById("monthlyLeaderboard").style.display=type==="month"?"block":"none";
+  document.getElementById("yearlyLeaderboard").style.display=type==="year"?"block":"none";
+  document.getElementById("hallOfFame").style.display=type==="hall"?"block":"none";
+};
+
+function getLeaderboardBadge(index,score){
+  if(index===0)return "👑";
+  if(score>=10)return "🔥";
+  if(score>=5)return "🏆";
+  if(score>=1)return "🍹";
+  return "🍗";
+}
+
+function showToast(message){
+  const toast = document.getElementById("toast");
+  toast.innerText = message;
+  toast.style.display = "block";
+
+  setTimeout(()=>{
+    toast.style.display = "none";
+  },2200);
+}
+
+function hideLoadingScreen(){
+  const loadingScreen = document.getElementById("loadingScreen");
+
+  if(loadingScreen){
+    loadingScreen.style.opacity = "0";
+
+    setTimeout(()=>{
+      loadingScreen.style.display = "none";
+    },600);
+  }
+}
+
+window.generateBoard = function(){
+  localStorage.removeItem(STORAGE_BOARD);
+  localStorage.removeItem(STORAGE_MARKED);
+  localStorage.removeItem(STORAGE_LINES);
+  localStorage.removeItem(STORAGE_BLACKOUT);
+  localStorage.removeItem(STORAGE_PHOTOS);
+  localStorage.setItem(STORAGE_SEASON,ACTIVE_SEASON_ID);
+
+  buildBoard();
+  showToast("New board generated 🍗");
+};
+
+window.resetBoard = function(){
+  localStorage.removeItem(STORAGE_MARKED);
+  localStorage.removeItem(STORAGE_LINES);
+  localStorage.removeItem(STORAGE_BLACKOUT);
+  localStorage.removeItem(STORAGE_PHOTOS);
+
+  buildBoard();
+  showToast("Your board was reset 🍗");
+};
+
+window.shareBoard = async function(){
+  const shareUrl = new URL(window.location.href);
+  shareUrl.searchParams.set("ref",getPlayerId());
+
+  try{
+    if(navigator.share){
+      await navigator.share({
+        title:"Wing-O",
+        text:"Bringing back Bingo 🍗🍹",
+        url:shareUrl.toString()
+      });
+    }else{
+      await navigator.clipboard.writeText(shareUrl.toString());
+      showToast("Referral link copied 📋");
+    }
+    await recordActivity({share:true});
+  }catch(error){
+    if(error?.name!=="AbortError") console.error("Share failed:",error);
+  }
+};
+
+window.openMemories = function(){
+  renderMyPhotos();
+  showMemoryTab("my");
+  document.getElementById("memoriesPanel").style.display = "flex";
+};
+
+window.closeMemories = function(){
+  document.getElementById("memoriesPanel").style.display = "none";
+};
+
+window.showMemoryTab = function(tab){
+  const myView = document.getElementById("myPhotosView");
+  const communityView = document.getElementById("communityView");
+  const statsView = document.getElementById("statsView");
+
+  const myTab = document.getElementById("myPhotosTab");
+  const communityTab = document.getElementById("communityTab");
+  const statsTab = document.getElementById("statsTab");
+
+  myView.style.display = tab === "my" ? "block" : "none";
+  communityView.style.display = tab === "community" ? "block" : "none";
+  statsView.style.display = tab === "stats" ? "block" : "none";
+
+  myTab.classList.toggle("active", tab === "my");
+  communityTab.classList.toggle("active", tab === "community");
+  statsTab.classList.toggle("active", tab === "stats");
+
+  if(tab === "my"){
+    renderMyPhotos();
+  }
+};
+
+function renderMyPhotos(){
+  const gallery = document.getElementById("myPhotosGallery");
+
+  if(!gallery){
+    return;
+  }
+
+  const savedPhotos = JSON.parse(localStorage.getItem(STORAGE_PHOTOS) || "{}");
+  const photos = Object.entries(savedPhotos);
+
+  if(photos.length === 0){
+    gallery.innerHTML = "No photo proofs yet 📸";
+    return;
+  }
+
+  gallery.innerHTML = "";
+
+  photos.forEach(([index,photo])=>{
+    const card = document.createElement("div");
+    card.classList.add("photo-card");
+
+    card.innerHTML = `
+      <img src="${photo}" alt="Wing-O photo proof">
+      <p><strong>Square ${Number(index)+1}</strong></p>
+      <p>Saved on this device</p>
+    `;
+
+    gallery.appendChild(card);
+  });
+}
+
+window.printMyPhotos = function(){
+  renderMyPhotos();
+  window.print();
+};
+
+// Backward-compatible alias in case an older button is cached.
+window.openPhotoAlbum = window.openMemories;
+
+window.migrateJulyLeaderboard=async function(){
+  if(!confirm("Restore the legacy leaderboard into July 2026 and the 2026 yearly leaderboard? Use this only if the old Wing-O scores are missing."))return;
+  const oldSnapshot=await getDocs(collection(db,"leaderboard"));
+  if(oldSnapshot.empty){showToast("No legacy leaderboard records found");return;}
+  const batch=writeBatch(db);
+  oldSnapshot.forEach(playerDoc=>{
+    const player=playerDoc.data();
+    const playerId=playerDoc.id;
+    const restored={
+      name:player.name||"Anonymous Wing Fan",
+      score:player.score||0,
+      bingos:player.bingos||0,
+      blackouts:player.blackouts||0,
+      photos:player.photos||0,
+      eligibleForWinner:true,
+      migratedFromLegacyLeaderboard:true,
+      updatedAt:serverTimestamp()
+    };
+    batch.set(doc(db,MONTHLY_COLLECTION,"2026-07","players",playerId),{...restored,seasonId:"2026-07",seasonName:"July 2026"},{merge:true});
+    batch.set(doc(db,YEARLY_COLLECTION,"2026","players",playerId),{...restored,year:"2026"},{merge:true});
+    batch.set(doc(db,PLAYER_COLLECTION,playerId),{
+      name:restored.name,
+      totalScore:restored.score,
+      totalBingos:restored.bingos,
+      totalBlackouts:restored.blackouts,
+      totalPhotos:restored.photos,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+  });
+  await batch.commit();
+  showToast("Legacy July scores restored 🍗");
+};
+
+window.adminReset = async function(){
+  if(!confirm(`Clear only the ${ACTIVE_SEASON_NAME} monthly leaderboard? Yearly totals and badges will remain.`)) return;
+  await deleteCollectionDocuments(collection(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players"));
+  showToast("Monthly leaderboard cleared 🍗");
+};
+
+async function deleteCollectionDocuments(collectionRef){
+  const snapshot=await getDocs(collectionRef);
+  if(snapshot.empty)return;
+  const batch=writeBatch(db);
+  snapshot.forEach(item=>batch.delete(item.ref));
+  await batch.commit();
+}
+
+window.resetYearlyLeaderboard=async function(){
+  const typed=prompt(`Type RESET ${ACTIVE_YEAR} to permanently clear the yearly leaderboard:`);
+  if(typed!==`RESET ${ACTIVE_YEAR}`){showToast("Yearly reset cancelled");return;}
+  await deleteCollectionDocuments(collection(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players"));
+  showToast(`${ACTIVE_YEAR} leaderboard cleared`);
+};
+
+async function loadBadgeDefinitions(){
+  const snapshot=await getDocs(collection(db,BADGE_COLLECTION,APP_ID,"badges"));
+  badgeDefinitionsCache=[];snapshot.forEach(d=>badgeDefinitionsCache.push({...d.data(),id:d.id}));
+  return badgeDefinitionsCache;
+}
+
+async function seedStarterBadges(){
+  await loadBadgeDefinitions();
+  const starters=[
+    {id:"first-snapshot",name:"First Snapshot",icon:"📸",description:"Submit your first photo proof.",triggerType:"photos",threshold:1,active:true},
+    {id:"memory-maker",name:"Memory Maker",icon:"🎞️",description:"Submit 10 photo proofs over time.",triggerType:"photos",threshold:10,active:true},
+    {id:"bingo-starter",name:"Bingo Starter",icon:"🍹",description:"Complete your first Wing-O.",triggerType:"bingos",threshold:1,active:true},
+    {id:"blackout-boss",name:"Blackout Boss",icon:"⚫",description:"Complete a full-board blackout.",triggerType:"blackouts",threshold:1,active:true},
+    {id:"wingo-champion",name:"Wing-O Champion",icon:"👑",description:"Win a monthly Wing-O leaderboard.",triggerType:"monthly_winner",threshold:1,active:true},
+    {id:"wingo-paparazzi",name:"Wing-O Paparazzi",icon:"📷",description:"Submit the most photos in a finalized month.",triggerType:"most_photos",threshold:1,active:true},
+    {id:"bingo-beast",name:"Bingo Beast",icon:"🔥",description:"Complete the most bingos in a finalized month.",triggerType:"most_bingos",threshold:1,active:true},
+    {id:"cheers",name:"Cheers",icon:"🥂",description:"Submit a photo with 3 or more people.",triggerType:"photo_people",threshold:1,active:true},
+    {id:"weekend-warrior",name:"Weekend Warrior",icon:"🏝️",description:"Participate on Friday, Saturday, and Sunday of one weekend.",triggerType:"weekend_days",threshold:3,active:true},
+    {id:"night-owl",name:"Night Owl",icon:"🦉",description:"Use the app after midnight.",triggerType:"time_after_midnight",threshold:1,active:true},
+    {id:"early-bird",name:"Early Bird",icon:"🌅",description:"Use the app before noon.",triggerType:"time_before_noon",threshold:1,active:true},
+    {id:"bender-status",name:"Bender Status",icon:"🍻",description:"Participate on 3 consecutive days.",triggerType:"consecutive_days",threshold:3,active:true},
+    {id:"dedicated-player",name:"Dedicated Player",icon:"📅",description:"Play in 3 consecutive monthly seasons.",triggerType:"consecutive_months",threshold:3,active:true},
+    {id:"lucky-streak",name:"Lucky Streak",icon:"🎰",description:"Complete the Ding Dong Win square.",triggerType:"specific_square",condition:"Ding Dong Win",threshold:1,active:true},
+    {id:"chaos-agent",name:"Chaos Agent",icon:"🚨",description:"Complete one of the current month's designated chaos squares.",triggerType:"chaos_square",threshold:1,active:true},
+    {id:"zamunda-fan",name:"Zamunda Fan",icon:"🔥",description:"Submit photo proof for Someone orders Zamunda Fire.",triggerType:"specific_photo_square",condition:"Zamunda Fire",threshold:1,active:true},
+    {id:"welcome-committee",name:"Welcome Committee",icon:"👋",description:"Invite a new player who opens Wing-O.",triggerType:"referrals",threshold:1,active:true},
+    {id:"party-starter",name:"Party Starter",icon:"🎉",description:"Share your Wing-O board 5 times.",triggerType:"shares",threshold:5,active:true},
+    {id:"squad-goals",name:"Squad Goals",icon:"👯",description:"Be tagged as appearing in 5 photos.",triggerType:"photo_appearances",threshold:5,active:true},
+    {id:"life-of-the-party",name:"Life of the Party",icon:"🪩",description:"Complete 5 photo challenges in one night.",triggerType:"photos_one_night",threshold:5,active:true},
+    {id:"pure-luck",name:"Pure Luck",icon:"🍀",description:"Get a bingo using no photo-proof squares.",triggerType:"pure_luck",threshold:1,active:true}
+  ];
+
+  const existingIds=new Set(badgeDefinitionsCache.map(b=>b.id));
+  const missing=starters.filter(b=>!existingIds.has(b.id));
+  if(missing.length){
+    const batch=writeBatch(db);
+    missing.forEach(b=>batch.set(doc(db,BADGE_COLLECTION,APP_ID,"badges",b.id),{...b,updatedAt:serverTimestamp()}));
+    await batch.commit();
+  }
+  await loadBadgeDefinitions();
+}
+
+async function awardBadge(playerId,badge,seasonId=ACTIVE_SEASON_ID){
+  const profileRef=doc(db,PLAYER_COLLECTION,playerId);
+  const snap=await getDoc(profileRef);
+  const profile=snap.exists()?snap.data():{};
+  const badges=profile.badges||[];
+  if(badges.some(b=>b.id===badge.id))return false;
+  badges.push({id:badge.id,name:badge.name,icon:badge.icon||"🎖",description:badge.description||"",earnedAt:new Date().toISOString(),seasonId});
+  await setDoc(profileRef,{badges},{merge:true});
+  if(playerId===getPlayerId())showToast(`Achievement unlocked: ${badge.icon||"🎖"} ${badge.name}`);
+  return true;
+}
+
+async function checkAutomaticBadges(playerId){
+  if(!badgeDefinitionsCache.length) await loadBadgeDefinitions();
+  const profileSnap=await getDoc(doc(db,PLAYER_COLLECTION,playerId));
+  const yearSnap=await getDoc(doc(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players",playerId));
+  const profile=profileSnap.exists()?profileSnap.data():{};
+  const year=yearSnap.exists()?yearSnap.data():{};
+
+  const maxPhotosOneNight=Math.max(0,...Object.values(profile.photosByNight||{}));
+  const completedSquares=(profile.completedSquares||[]).map(x=>String(x).toLowerCase());
+  const completedPhotoSquares=(profile.completedPhotoSquares||[]).map(x=>String(x).toLowerCase());
+
+  for(const badge of badgeDefinitionsCache.filter(b=>b.active!==false)){
+    const threshold=badge.threshold||1;
+    let earned=false;
+
+    switch(badge.triggerType){
+      case "photos": earned=(profile.totalPhotos||0)>=threshold; break;
+      case "bingos": earned=(profile.totalBingos||0)>=threshold; break;
+      case "blackouts": earned=(profile.totalBlackouts||0)>=threshold; break;
+      case "score": earned=(year.score||0)>=threshold; break;
+      case "shares": earned=(profile.shares||0)>=threshold; break;
+      case "referrals": earned=(profile.referrals||0)>=threshold; break;
+      case "photo_appearances": earned=(profile.photoAppearances||0)>=threshold; break;
+      case "photo_people": earned=(profile.photosWithThreePlus||0)>=threshold; break;
+      case "photos_one_night": earned=maxPhotosOneNight>=threshold; break;
+      case "consecutive_days": earned=hasConsecutiveDays(profile.activeDates||[],threshold); break;
+      case "weekend_days": earned=hasWeekendSet(profile.activeDates||[]); break;
+      case "consecutive_months": earned=hasConsecutiveMonths(profile.seasonsPlayed||[],threshold); break;
+      case "time_after_midnight": earned=(profile.afterMidnightActions||0)>=threshold; break;
+      case "time_before_noon": earned=(profile.beforeNoonActions||0)>=threshold; break;
+      case "specific_square":{
+        const condition=(badge.condition||"").toLowerCase();
+        earned=condition && completedSquares.some(square=>square.includes(condition));
+        break;
+      }
+      case "specific_photo_square":{
+        const condition=(badge.condition||"").toLowerCase();
+        earned=condition && completedPhotoSquares.some(square=>square.includes(condition));
+        break;
+      }
+      case "chaos_square":
+        earned=completedSquares.some(square=>ACTIVE_CHAOS_SQUARES.some(chaos=>square===String(chaos).toLowerCase()));
+        break;
+      case "pure_luck": earned=(profile.pureLuckBingos||0)>=threshold; break;
+    }
+
+    if(earned) await awardBadge(playerId,badge);
+  }
+}
+
+window.openProfile=async function(){
+  document.getElementById("profilePanel").style.display="flex";
+  const playerId=getPlayerId();
+  const [profileSnap,monthSnap,yearSnap]=await Promise.all([
+    getDoc(doc(db,PLAYER_COLLECTION,playerId)),
+    getDoc(doc(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players",playerId)),
+    getDoc(doc(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players",playerId))
+  ]);
+  const p=profileSnap.exists()?profileSnap.data():{};const m=monthSnap.exists()?monthSnap.data():{};const y=yearSnap.exists()?yearSnap.data():{};
+  const badges=p.badges||[];
+  document.getElementById("profileContent").innerHTML=`
+    <h3>${p.name||getPlayerName()}</h3>
+    <div class="profile-stat-grid">
+      <div class="profile-stat"><strong>${m.score||0}</strong><br>Monthly score</div>
+      <div class="profile-stat"><strong>${y.score||0}</strong><br>${ACTIVE_YEAR} score</div>
+      <div class="profile-stat"><strong>${p.totalPhotos||0}</strong><br>Total photos</div>
+      <div class="profile-stat"><strong>${p.totalBingos||0}</strong><br>Total bingos</div>
+      <div class="profile-stat"><strong>${p.totalBlackouts||0}</strong><br>Blackouts</div>
+      <div class="profile-stat"><strong>${p.monthlyWins||0}</strong><br>Monthly wins</div>
+      <div class="profile-stat"><strong>${p.shares||0}</strong><br>Board shares</div>
+      <div class="profile-stat"><strong>${p.referrals||0}</strong><br>New players invited</div>
+      <div class="profile-stat"><strong>${p.photoAppearances||0}</strong><br>Photo appearances</div>
+      <div class="profile-stat"><strong>${(p.activeDates||[]).length}</strong><br>Active days</div>
+    </div>
+    <h3>Badges</h3>
+    <div>${badges.length?badges.map(b=>`<span class="badge-chip" title="${b.description||""}">${b.icon||"🎖"} ${b.name}</span>`).join(""):"No badges earned yet."}</div>`;
+};
+window.closeProfile=function(){document.getElementById("profilePanel").style.display="none";};
+
+window.openBadgeManager=async function(){
+  document.getElementById("badgeManagerPanel").style.display="flex";
+  await renderBadgeManager();
+};
+window.closeBadgeManager=function(){document.getElementById("badgeManagerPanel").style.display="none";};
+window.clearBadgeForm=function(){["badgeId","badgeName","badgeIcon","badgeDescription","badgeCondition"].forEach(id=>document.getElementById(id).value="");document.getElementById("badgeThreshold").value=1;document.getElementById("badgeActive").checked=true;};
+window.saveBadgeDefinition=async function(){
+  const name=document.getElementById("badgeName").value.trim();if(!name){alert("Enter a badge name.");return;}
+  const existingId=document.getElementById("badgeId").value;
+  const id=existingId||name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||crypto.randomUUID();
+  await setDoc(doc(db,BADGE_COLLECTION,APP_ID,"badges",id),{
+    name,icon:document.getElementById("badgeIcon").value.trim()||"🎖",description:document.getElementById("badgeDescription").value.trim(),
+    triggerType:document.getElementById("badgeTrigger").value,
+    condition:document.getElementById("badgeCondition").value.trim(),
+    threshold:Number(document.getElementById("badgeThreshold").value)||1,
+    active:document.getElementById("badgeActive").checked,updatedAt:serverTimestamp()
+  },{merge:true});
+  clearBadgeForm();await renderBadgeManager();showToast("Badge saved 🎖");
+};
+window.editBadgeDefinition=function(id){
+  const b=badgeDefinitionsCache.find(x=>x.id===id);if(!b)return;
+  document.getElementById("badgeId").value=b.id;document.getElementById("badgeName").value=b.name||"";document.getElementById("badgeIcon").value=b.icon||"";
+  document.getElementById("badgeDescription").value=b.description||"";document.getElementById("badgeTrigger").value=b.triggerType||"manual";
+  document.getElementById("badgeCondition").value=b.condition||"";
+  document.getElementById("badgeThreshold").value=b.threshold||1;document.getElementById("badgeActive").checked=b.active!==false;
+};
+window.deactivateBadgeDefinition=async function(id){await setDoc(doc(db,BADGE_COLLECTION,APP_ID,"badges",id),{active:false,updatedAt:serverTimestamp()},{merge:true});await renderBadgeManager();};
+async function renderBadgeManager(){
+  await loadBadgeDefinitions();
+  document.getElementById("badgeDefinitionList").innerHTML=badgeDefinitionsCache.length?badgeDefinitionsCache.map(b=>`<div class="badge-definition"><strong>${b.icon||"🎖"} ${b.name}</strong> ${b.active===false?"(inactive)":""}<br><span class="small-note">${b.description||""} • ${b.triggerType}${b.condition?` • ${b.condition}`:""} ≥ ${b.threshold||1}</span><br><button onclick="editBadgeDefinition('${b.id}')">Edit</button><button onclick="deactivateBadgeDefinition('${b.id}')">Deactivate</button></div>`).join(""):"No badge definitions yet.";
+  const profiles=await getDocs(collection(db,PLAYER_COLLECTION));
+  const playerSelect=document.getElementById("manualBadgePlayer");playerSelect.innerHTML="";profiles.forEach(d=>{const o=document.createElement("option");o.value=d.id;o.textContent=d.data().name||d.id;playerSelect.appendChild(o);});
+  const badgeSelect=document.getElementById("manualBadgeDefinition");badgeSelect.innerHTML="";badgeDefinitionsCache.filter(b=>b.active!==false).forEach(b=>{const o=document.createElement("option");o.value=b.id;o.textContent=`${b.icon||"🎖"} ${b.name}`;badgeSelect.appendChild(o);});
+}
+window.awardManualBadge=async function(){const playerId=document.getElementById("manualBadgePlayer").value;const badge=badgeDefinitionsCache.find(b=>b.id===document.getElementById("manualBadgeDefinition").value);if(playerId&&badge){await awardBadge(playerId,badge);showToast("Badge awarded 🎁");}};
+
+window.openEligibilityManager=async function(){
+  document.getElementById("eligibilityPanel").style.display="flex";
+  await renderEligibilityManager();
+};
+window.closeEligibilityManager=function(){document.getElementById("eligibilityPanel").style.display="none";};
+
+async function renderEligibilityManager(){
+  const list=document.getElementById("eligibilityList");
+  list.innerHTML="Loading players...";
+  const profiles=await getDocs(collection(db,PLAYER_COLLECTION));
+  const players=[];
+  profiles.forEach(d=>players.push({...d.data(),id:d.id}));
+  players.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  if(!players.length){list.innerHTML="No player profiles yet.";return;}
+  list.innerHTML=players.map(player=>{
+    const eligible=player.eligibleForWinner!==false;
+    const isMe=player.id===getPlayerId()?" (this device)":"";
+    return `<div class="stat-row"><span><strong>${player.name||"Anonymous"}</strong>${isMe}<br><span class="small-note">${eligible?"Eligible for official wins":"Testing / not eligible"}</span></span><button onclick="setWinnerEligibility('${player.id}',${!eligible})">${eligible?"Mark Testing":"Make Eligible"}</button></div>`;
+  }).join("");
+}
+
+window.setWinnerEligibility=async function(playerId,eligible){
+  const updates={eligibleForWinner:eligible,updatedAt:serverTimestamp()};
+  await Promise.all([
+    setDoc(doc(db,PLAYER_COLLECTION,playerId),updates,{merge:true}),
+    setDoc(doc(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players",playerId),updates,{merge:true}),
+    setDoc(doc(db,YEARLY_COLLECTION,ACTIVE_YEAR,"players",playerId),updates,{merge:true})
+  ]);
+  await renderEligibilityManager();
+  showToast(eligible?"Player is eligible ✅":"Player marked as testing 🧪");
+};
+
+window.recoverMonthlyScores=async function(){
+  const sourceName=prompt("Copy scores FROM which month?", "July 2026");
+  if(!sourceName)return;
+  const targetName=prompt("Copy scores TO which month?", "August 2026");
+  if(!targetName)return;
+
+  const sourceId=parseSeasonNameToId(sourceName.trim());
+  const targetId=parseSeasonNameToId(targetName.trim());
+  if(!sourceId||!targetId){alert("Use month names like July 2026 and August 2026.");return;}
+  if(sourceId===targetId){alert("The source and destination months must be different.");return;}
+
+  const sourceRef=collection(db,MONTHLY_COLLECTION,sourceId,"players");
+  const targetRef=collection(db,MONTHLY_COLLECTION,targetId,"players");
+  const [sourceSnap,targetSnap,profilesSnap]=await Promise.all([
+    getDocs(sourceRef),getDocs(targetRef),getDocs(collection(db,PLAYER_COLLECTION))
+  ]);
+
+  if(sourceSnap.empty){alert(`No player scores were found in ${sourceName}. Nothing was changed.`);return;}
+
+  const meaningfulTarget=[];
+  targetSnap.forEach(d=>{
+    const p=d.data();
+    if((p.score||0)||(p.bingos||0)||(p.photos||0)||(p.blackouts||0)) meaningfulTarget.push(p.name||d.id);
+  });
+  if(meaningfulTarget.length){
+    alert(`${targetName} already contains scoring activity for: ${meaningfulTarget.join(", ")}. Recovery stopped to avoid overwriting it.`);
+    return;
+  }
+
+  const eligibility=new Map();
+  profilesSnap.forEach(d=>eligibility.set(d.id,d.data().eligibleForWinner!==false));
+  const sourcePlayers=[];
+  sourceSnap.forEach(d=>sourcePlayers.push({id:d.id,...d.data()}));
+  if(!confirm(`Copy ${sourcePlayers.length} player record${sourcePlayers.length===1?"":"s"} from ${sourceName} to ${targetName}? The original ${sourceName} records will be kept as a backup.`))return;
+
+  const batch=writeBatch(db);
+  sourcePlayers.forEach(player=>{
+    const {id,...data}=player;
+    batch.set(doc(db,MONTHLY_COLLECTION,targetId,"players",id),{
+      ...data,
+      seasonId:targetId,
+      seasonName:targetName.trim(),
+      eligibleForWinner:eligibility.has(id)?eligibility.get(id):(data.eligibleForWinner!==false),
+      recoveredFrom:sourceId,
+      recoveredAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+  });
+  await batch.commit();
+
+  const verifySnap=await getDocs(targetRef);
+  const verifiedIds=new Set();verifySnap.forEach(d=>verifiedIds.add(d.id));
+  const missing=sourcePlayers.filter(p=>!verifiedIds.has(p.id));
+  if(missing.length){alert("The copy could not be fully verified. The original records are untouched.");return;}
+
+  alert(`${sourcePlayers.length} player record${sourcePlayers.length===1?" was":"s were"} safely copied to ${targetName}. The ${sourceName} records remain as a backup. Now change the active season to ${targetName}, confirm the scores, and finalize that month.`);
+};
+
+window.finalizeMonth=async function(){
+  const monthRef=collection(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID,"players");
+  const snapshot=await getDocs(monthRef);const players=[];snapshot.forEach(d=>players.push({...d.data(),id:d.id}));
+  if(!players.length){alert("There are no monthly scores to finalize.");return;}
+  const profiles=await getDocs(collection(db,PLAYER_COLLECTION));
+  const eligibility=new Map();profiles.forEach(d=>eligibility.set(d.id,d.data().eligibleForWinner!==false));
+  players.forEach(p=>p.eligibleForWinner=eligibility.has(p.id)?eligibility.get(p.id):(p.eligibleForWinner!==false));
+  const eligiblePlayers=players.filter(p=>p.eligibleForWinner!==false).sort((a,b)=>(b.score||0)-(a.score||0));
+  if(!eligiblePlayers.length){alert("No eligible players are available. Update Winner Eligibility first.");return;}
+  finalizePlayersCache=players;
+  const select=document.getElementById("finalWinnerSelect");
+  select.innerHTML=eligiblePlayers.map(p=>`<option value="${p.id}">${p.name||"Anonymous"} — ${p.score||0} points</option>`).join("");
+  document.getElementById("finalizeSummary").innerHTML=`<h3>${ACTIVE_SEASON_NAME}</h3>${players.sort((a,b)=>(b.score||0)-(a.score||0)).map((p,i)=>`<div class="stat-row"><span>${i+1}. <strong>${p.name||"Anonymous"}</strong><br><span class="small-note">${p.eligibleForWinner!==false?"Eligible":"Testing — excluded"}</span></span><strong>${p.score||0} pts</strong></div>`).join("")}`;
+  document.getElementById("finalizePanel").style.display="flex";
+};
+
+window.closeFinalizeMonth=function(){document.getElementById("finalizePanel").style.display="none";finalizePlayersCache=[];};
+
+window.confirmFinalizeMonth=async function(){
+  const winnerId=document.getElementById("finalWinnerSelect").value;
+  const players=[...finalizePlayersCache];
+  const winner=players.find(p=>p.id===winnerId && p.eligibleForWinner!==false);
+  if(!winner){alert("Choose an eligible winner.");return;}
+  if(!confirm(`Confirm ${winner.name||"Anonymous"} as the ${ACTIVE_SEASON_NAME} winner with ${winner.score||0} points?`))return;
+  const eligiblePlayers=players.filter(p=>p.eligibleForWinner!==false);
+  const photoWinner=[...eligiblePlayers].sort((a,b)=>(b.photos||0)-(a.photos||0))[0];
+  const bingoWinner=[...eligiblePlayers].sort((a,b)=>(b.bingos||0)-(a.bingos||0))[0];
+  const hotCounts={};players.forEach(p=>Object.entries(p.squareHits||{}).forEach(([k,v])=>hotCounts[k]=(hotCounts[k]||0)+v));
+  const hotSquares=Object.entries(hotCounts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([square,count])=>({square,count}));
+  await setDoc(doc(db,HALL_COLLECTION,`${APP_ID}-${ACTIVE_SEASON_ID}`),{
+    app:APP_ID,seasonId:ACTIVE_SEASON_ID,seasonName:ACTIVE_SEASON_NAME,winnerId:winner.id,winnerName:winner.name,winnerScore:winner.score||0,
+    photoWinnerId:photoWinner?.id||null,photoWinnerName:photoWinner?.name||null,photoCount:photoWinner?.photos||0,bingoWinnerId:bingoWinner?.id||null,bingoWinnerName:bingoWinner?.name||null,bingoCount:bingoWinner?.bingos||0,
+    hotSquares,results:players.map(p=>({id:p.id,name:p.name||"Anonymous",score:p.score||0,bingos:p.bingos||0,photos:p.photos||0,blackouts:p.blackouts||0,eligibleForWinner:p.eligibleForWinner!==false})),finalized:true,finalizedAt:serverTimestamp()
+  });
+  const profileRef=doc(db,PLAYER_COLLECTION,winner.id);const profileSnap=await getDoc(profileRef);await setDoc(profileRef,{monthlyWins:(profileSnap.data()?.monthlyWins||0)+1},{merge:true});
+  if(!badgeDefinitionsCache.length)await loadBadgeDefinitions();
+  for(const b of badgeDefinitionsCache.filter(x=>x.active!==false)){
+    if(b.triggerType==="monthly_winner")await awardBadge(winner.id,b);
+    if(b.triggerType==="most_photos"&&photoWinner)await awardBadge(photoWinner.id,b);
+    if(b.triggerType==="most_bingos"&&bingoWinner)await awardBadge(bingoWinner.id,b);
+  }
+  await setDoc(doc(db,MONTHLY_COLLECTION,ACTIVE_SEASON_ID),{app:APP_ID,seasonName:ACTIVE_SEASON_NAME,finalized:true,winnerId:winner.id,winnerName:winner.name,finalizedAt:serverTimestamp()},{merge:true});
+  closeFinalizeMonth();
+  showToast(`${ACTIVE_SEASON_NAME} finalized 👑`);
+};
+
+window.openSeasonEditor = function(){
+  const seasonInput = document.getElementById("seasonName");
+  const squaresInput = document.getElementById("seasonSquares");
+
+  seasonInput.value = ACTIVE_SEASON_NAME;
+
+  squaresInput.value = WORD_BANK.map(square => {
+    if(typeof square === "object" && square.photo){
+      return `${square.text} *`;
+    }
+
+    if(typeof square === "object"){
+      return square.text;
+    }
+
+    return square;
+  }).join("\n");
+
+  document.getElementById("chaosSquares").value = ACTIVE_CHAOS_SQUARES.join("\n");
+  document.getElementById("seasonEditorPanel").style.display = "flex";
+};
+
+window.closeSeasonEditor = function(){
+  document.getElementById("seasonEditorPanel").style.display = "none";
+  document.getElementById("badgeManagerPanel").style.display = "none";
+  document.getElementById("profilePanel").style.display = "none";
+};
+
+window.saveActiveSeason = async function(){
+  const seasonName = document.getElementById("seasonName").value.trim();
+  const rawSquares = document.getElementById("seasonSquares").value;
+  const chaosSquares = document.getElementById("chaosSquares").value
+    .split("\n")
+    .map(item=>item.trim())
+    .filter(Boolean);
+
+  const squares = rawSquares
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map(line => {
+      const needsPhoto = line.endsWith("*");
+      const text = line.replace(/\*$/, "").trim();
+
+      if(needsPhoto){
+        return { text:text, photo:true };
+      }
+
+      return text;
+    });
+
+  if(!seasonName){
+    alert("Please enter a season name.");
+    return;
+  }
+
+  if(squares.length < 24){
+    alert("You need at least 24 squares.");
+    return;
+  }
+
+  const seasonId = parseSeasonNameToId(seasonName);
+  if(!seasonId){alert("Use a season name like August 2026.");return;}
+
+  await setDoc(ACTIVE_SEASON_DOC, {
+    app: APP_ID,
+    seasonName: seasonName,
+    seasonId: seasonId,
+    squares: squares,
+    chaosSquares: chaosSquares,
+    updatedAt: serverTimestamp()
+  });
+
+  WORD_BANK = squares;
+  ACTIVE_SEASON_ID = seasonId;
+  ACTIVE_SEASON_NAME = seasonName;
+  ACTIVE_YEAR = seasonId.slice(0,4);
+  ACTIVE_CHAOS_SQUARES = chaosSquares;
+
+  localStorage.removeItem(STORAGE_BOARD);
+  localStorage.removeItem(STORAGE_MARKED);
+  localStorage.removeItem(STORAGE_LINES);
+  localStorage.removeItem(STORAGE_BLACKOUT);
+  localStorage.removeItem(STORAGE_PHOTOS);
+
+  buildBoard();
+  listenMonthlyLeaderboard();
+  listenYearlyLeaderboard();
+  loadCommunityGallery();
+
+  showToast("Season updated 🍗");
+  closeSeasonEditor();
+};
+
+window.closeAdminPanel = function(){
+  document.getElementById("adminPanel").style.display = "none";
+  document.getElementById("seasonEditorPanel").style.display = "none";
+  document.getElementById("eligibilityPanel").style.display = "none";
+  document.getElementById("finalizePanel").style.display = "none";
+};
+
+let versionTapCount = 0;
+let versionTapTimer;
+
+document.getElementById("versionLabel").addEventListener("click", () => {
+  versionTapCount++;
+
+  clearTimeout(versionTapTimer);
+
+  versionTapTimer = setTimeout(() => {
+    versionTapCount = 0;
+  }, 3000);
+
+  if(versionTapCount >= 7){
+    versionTapCount = 0;
+
+    const password = prompt("Enter Admin Password");
+
+    if(password === "Hammertime#21"){
+      document.getElementById("adminPanel").style.display = "flex";
+      showToast("🛠 Admin Mode Enabled");
+    }else{
+      showToast("Incorrect Password");
+    }
+  }
+});
+
+
+window.addEventListener("load",()=>{
+  setTimeout(hideLoadingScreen,2500);
+});
+
+async function startApp(){
+  await loadActiveSeason();
+
+  getPlayerName();
+  await ensureCurrentPlayerEligibility();
+  buildBoard();
+  await seedStarterBadges();
+  await recordActivity();
+  await processReferral();
+  listenMonthlyLeaderboard();
+  listenYearlyLeaderboard();
+  listenHallOfFame();
+  loadCommunityGallery();
+}
+
+startApp();
+
+setTimeout(hideLoadingScreen,4000);
+</script>
+</body>
+</html>
